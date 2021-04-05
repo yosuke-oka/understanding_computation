@@ -17,14 +17,29 @@ enum Formula {
 impl fmt::Display for Formula {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Formula::Number { value } => write!(f, "{}", value),
-            Formula::Add { left, right } => write!(f, "{} + {}", left, right),
-            Formula::Multiply { left, right } => write!(f, "{} + {}", left, right),
+            Formula::Number { ref value } => write!(f, "{}", value),
+            Formula::Add {
+                ref left,
+                ref right,
+            } => write!(f, "{} + {}", left, right),
+            Formula::Multiply {
+                ref left,
+                ref right,
+            } => write!(f, "{} * {}", left, right),
         }
     }
 }
 
 fn main() {
-    let multi = Formula::Number { value: 4 };
-    println!("{}", multi);
+    let formula = Formula::Add {
+        left: Box::new(Formula::Multiply {
+            left: Box::new(Formula::Number { value: 1 }),
+            right: Box::new(Formula::Number { value: 2 }),
+        }),
+        right: Box::new(Formula::Multiply {
+            left: Box::new(Formula::Number { value: 3 }),
+            right: Box::new(Formula::Number { value: 4 }),
+        }),
+    };
+    println!("{}", formula);
 }
