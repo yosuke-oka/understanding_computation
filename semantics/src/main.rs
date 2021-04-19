@@ -47,19 +47,25 @@ impl Expression {
                     Box::new(Expression::Add {
                         left: left.reduce(),
                         right: *right,
-                    });
+                    })
                 } else if right.is_reducible() {
                     Box::new(Expression::Add {
                         left: *left,
                         right: right.reduce(),
-                    });
+                    })
                 } else {
                     Box::new(Expression::Number {
-                        value: left.value + right.value,
-                    });
+                        value: left.get_value() + right.get_value(),
+                    })
                 }
             }
             _ => panic!("mada jissou sitenai"),
+        }
+    }
+    fn get_value(&self) -> u32 {
+        match *self {
+            Expression::Number { ref value } => *value,
+            _ => panic!("not a Number"),
         }
     }
 }
