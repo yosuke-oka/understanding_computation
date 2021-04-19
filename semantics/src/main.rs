@@ -97,8 +97,25 @@ impl Expression {
     }
 }
 
+struct Machine {
+    expression: Box<Expression>,
+}
+
+impl Machine {
+    fn step(&mut self) {
+        self.expression = self.expression.reduce()
+    }
+    fn run(&mut self) {
+        while self.expression.is_reducible() {
+            println!("{}", self.expression);
+            self.step();
+        }
+        println!("{}", self.expression);
+    }
+}
+
 fn main() {
-    let expression = Expression::Add {
+    let expression = Box::new(Expression::Add {
         left: Box::new(Expression::Multiply {
             left: Box::new(Expression::Number { value: 1 }),
             right: Box::new(Expression::Number { value: 2 }),
@@ -107,11 +124,17 @@ fn main() {
             left: Box::new(Expression::Number { value: 3 }),
             right: Box::new(Expression::Number { value: 4 }),
         }),
-    };
+    });
     println!("{}", expression);
     println!("{}", expression.is_reducible());
     println!("{}", Expression::Number { value: 1 }.is_reducible());
     println!("{}", expression.reduce());
     println!("{}", expression.reduce().reduce());
     println!("{}", expression.reduce().reduce().reduce());
+    println!("--");
+
+    let mut machine = Machine {
+        expression: expression,
+    };
+    machine.run();
 }
