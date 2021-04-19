@@ -42,4 +42,13 @@ fn main() {
         }),
     };
     println!("{}", expression);
+    println!("{}", is_reducible(expression));
+    println!("{}", is_reducible(Expression::Number { value: 1 }));
+}
+
+fn is_reducible(expression: Expression) -> bool {
+    match expression {
+        Expression::Number { value: _ } => false,
+        _ => true,
+    }
 }
