@@ -54,14 +54,24 @@ impl Expression {
                         right: right.reduce(),
                     })
                 } else {
-                    Box::new(Expression::Number {
-                        value: left.get_value() + right.get_value(),
-                    })
+                    match (**left, **right) {
+                        (
+                            Expression::Number { value: left_value },
+                            Expression::Number { value: right_value },
+                        ) => Box::new(Expression::Number {
+                            value: left_value + right_value,
+                        }),
+                        _ => panic!("not a number"),
+                    }
+                    // Box::new(Expression::Number {
+                    //     value: left.get_value() + right.get_value(),
+                    // })
                 }
             }
             _ => panic!("mada jissou sitenai"),
         }
     }
+    //TODO: いらないかも
     fn get_value(&self) -> u32 {
         match *self {
             Expression::Number { ref value } => *value,
