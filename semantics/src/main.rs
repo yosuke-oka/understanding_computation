@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Clone)]
 enum Expression {
     Number {
         value: u32,
@@ -46,36 +47,52 @@ impl Expression {
                 if left.is_reducible() {
                     Box::new(Expression::Add {
                         left: left.reduce(),
-                        right: *right,
+                        right: right.clone(),
                     })
                 } else if right.is_reducible() {
                     Box::new(Expression::Add {
-                        left: *left,
+                        left: left.clone(),
                         right: right.reduce(),
                     })
                 } else {
-                    match (**left, **right) {
+                    match (left.as_ref(), right.as_ref()) {
                         (
                             Expression::Number { value: left_value },
                             Expression::Number { value: right_value },
                         ) => Box::new(Expression::Number {
                             value: left_value + right_value,
                         }),
-                        _ => panic!("not a number"),
+                        _ => unreachable!(),
                     }
-                    // Box::new(Expression::Number {
-                    //     value: left.get_value() + right.get_value(),
-                    // })
+                }
+            }
+            Expression::Multiply {
+                ref left,
+                ref right,
+            } => {
+                if left.is_reducible() {
+                    Box::new(Expression::Multiply {
+                        left: left.reduce(),
+                        right: right.clone(),
+                    })
+                } else if right.is_reducible() {
+                    Box::new(Expression::Multiply {
+                        left: left.clone(),
+                        right: right.reduce(),
+                    })
+                } else {
+                    match (left.as_ref(), right.as_ref()) {
+                        (
+                            Expression::Number { value: left_value },
+                            Expression::Number { value: right_value },
+                        ) => Box::new(Expression::Number {
+                            value: left_value * right_value,
+                        }),
+                        _ => unreachable!(),
+                    }
                 }
             }
             _ => panic!("mada jissou sitenai"),
-        }
-    }
-    //TODO: いらないかも
-    fn get_value(&self) -> u32 {
-        match *self {
-            Expression::Number { ref value } => *value,
-            _ => panic!("not a Number"),
         }
     }
 }
@@ -94,4 +111,7 @@ fn main() {
     println!("{}", expression);
     println!("{}", expression.is_reducible());
     println!("{}", Expression::Number { value: 1 }.is_reducible());
+    println!("{}", expression.reduce());
+    println!("{}", expression.reduce().reduce());
+    println!("{}", expression.reduce().reduce().reduce());
 }
