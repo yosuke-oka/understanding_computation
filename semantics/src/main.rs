@@ -30,6 +30,15 @@ impl fmt::Display for Expression {
     }
 }
 
+impl Expression {
+    fn is_reducible(&self) -> bool {
+        match *self {
+            Expression::Number { value: _ } => false,
+            _ => true,
+        }
+    }
+}
+
 fn main() {
     let expression = Expression::Add {
         left: Box::new(Expression::Multiply {
@@ -42,13 +51,6 @@ fn main() {
         }),
     };
     println!("{}", expression);
-    println!("{}", is_reducible(expression));
-    println!("{}", is_reducible(Expression::Number { value: 1 }));
-}
-
-fn is_reducible(expression: Expression) -> bool {
-    match expression {
-        Expression::Number { value: _ } => false,
-        _ => true,
-    }
+    println!("{}", expression.is_reducible());
+    println!("{}", Expression::Number { value: 1 }.is_reducible());
 }
