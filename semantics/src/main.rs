@@ -37,6 +37,31 @@ impl Expression {
             _ => true,
         }
     }
+    fn reduce(&self) -> Box<Expression> {
+        match *self {
+            Expression::Add {
+                ref left,
+                ref right,
+            } => {
+                if left.is_reducible() {
+                    Box::new(Expression::Add {
+                        left: left.reduce(),
+                        right: *right,
+                    });
+                } else if right.is_reducible() {
+                    Box::new(Expression::Add {
+                        left: *left,
+                        right: right.reduce(),
+                    });
+                } else {
+                    Box::new(Expression::Number {
+                        value: left.value + right.value,
+                    });
+                }
+            }
+            _ => panic!("mada jissou sitenai"),
+        }
+    }
 }
 
 fn main() {
