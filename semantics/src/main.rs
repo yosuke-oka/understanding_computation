@@ -20,12 +20,14 @@ enum Expression {
     Variable(String),
 }
 
+type Environment = HashMap<String, Box<Expression>>;
+
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
+        match self {
             Expression::Number(value) => write!(f, "{}", value),
             Expression::Boolean(value) => write!(f, "{}", value),
-            Expression::Variable(ref name) => write!(f, "{}", name),
+            Expression::Variable(name) => write!(f, "{}", name),
             Expression::Add {
                 ref left,
                 ref right,
@@ -50,8 +52,8 @@ impl Expression {
             _ => true,
         }
     }
-    fn reduce(&self, environment: HashMap<String, Box<Expression>>) -> Box<Expression> {
-        match *self {
+    fn reduce(&self, environment: &Environment) -> Box<Expression> {
+        match self {
             Expression::Add {
                 ref left,
                 ref right,
@@ -121,9 +123,9 @@ impl Expression {
                     }
                 }
             }
-            Expression::Variable(ref name) => {
-                if let Some(&expression) = environment.get(&name) {
-                    expression
+            Expression::Variable(name) => {
+                if let Some(expression) = environment.get(name) {
+                    expression.clone()
                 } else {
                     panic!("undefined variable")
                 }
@@ -135,12 +137,12 @@ impl Expression {
 
 struct Machine {
     expression: Box<Expression>,
-    environment: HashMap<String, Box<Expression>>,
+    environment: Environment,
 }
 
 impl Machine {
     fn step(&mut self) {
-        self.expression = self.expression.reduce(self.environment.clone())
+        self.expression = self.expression.reduce(&self.environment)
     }
     fn run(&mut self) {
         while self.expression.is_reducible() {
