@@ -187,4 +187,18 @@ fn main() {
     machine.run();
 
     println!("--");
+
+    let expression = Box::new(Expression::Add {
+        left: Box::new(Expression::Variable(String::from("x"))),
+        right: Box::new(Expression::Variable(String::from("y"))),
+    });
+    let mut environment = HashMap::new();
+    environment.insert(String::from("x"), Box::new(Expression::Number(3)));
+    environment.insert(String::from("y"), Box::new(Expression::Number(4)));
+
+    let mut machine = Machine {
+        expression: expression,
+        environment: environment,
+    };
+    machine.run();
 }
