@@ -2,9 +2,7 @@ use std::fmt;
 
 #[derive(Clone)]
 enum Expression {
-    Number {
-        value: u32,
-    },
+    Number(u32),
     Add {
         left: Box<Expression>,
         right: Box<Expression>,
@@ -18,7 +16,7 @@ enum Expression {
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Expression::Number { ref value } => write!(f, "{}", value),
+            Expression::Number(value) => write!(f, "{}", value),
             Expression::Add {
                 ref left,
                 ref right,
@@ -34,7 +32,7 @@ impl fmt::Display for Expression {
 impl Expression {
     fn is_reducible(&self) -> bool {
         match *self {
-            Expression::Number { value: _ } => false,
+            Expression::Number(_) => false,
             _ => true,
         }
     }
@@ -56,12 +54,9 @@ impl Expression {
                     })
                 } else {
                     match (left.as_ref(), right.as_ref()) {
-                        (
-                            Expression::Number { value: left_value },
-                            Expression::Number { value: right_value },
-                        ) => Box::new(Expression::Number {
-                            value: left_value + right_value,
-                        }),
+                        (Expression::Number(left_value), Expression::Number(right_value)) => {
+                            Box::new(Expression::Number(left_value + right_value))
+                        }
                         _ => unreachable!(),
                     }
                 }
@@ -82,12 +77,9 @@ impl Expression {
                     })
                 } else {
                     match (left.as_ref(), right.as_ref()) {
-                        (
-                            Expression::Number { value: left_value },
-                            Expression::Number { value: right_value },
-                        ) => Box::new(Expression::Number {
-                            value: left_value * right_value,
-                        }),
+                        (Expression::Number(left_value), Expression::Number(right_value)) => {
+                            Box::new(Expression::Number(left_value * right_value))
+                        }
                         _ => unreachable!(),
                     }
                 }
@@ -117,17 +109,17 @@ impl Machine {
 fn main() {
     let expression = Box::new(Expression::Add {
         left: Box::new(Expression::Multiply {
-            left: Box::new(Expression::Number { value: 1 }),
-            right: Box::new(Expression::Number { value: 2 }),
+            left: Box::new(Expression::Number(1)),
+            right: Box::new(Expression::Number(2)),
         }),
         right: Box::new(Expression::Multiply {
-            left: Box::new(Expression::Number { value: 3 }),
-            right: Box::new(Expression::Number { value: 4 }),
+            left: Box::new(Expression::Number(3)),
+            right: Box::new(Expression::Number(4)),
         }),
     });
     println!("{}", expression);
     println!("{}", expression.is_reducible());
-    println!("{}", Expression::Number { value: 1 }.is_reducible());
+    println!("{}", Expression::Number(1).is_reducible());
     println!("{}", expression.reduce());
     println!("{}", expression.reduce().reduce());
     println!("{}", expression.reduce().reduce().reduce());
