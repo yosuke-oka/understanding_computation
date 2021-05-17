@@ -3,6 +3,7 @@ use std::fmt;
 #[derive(Clone)]
 enum Expression {
     Number(u32),
+    Boolean(bool),
     Add {
         left: Box<Expression>,
         right: Box<Expression>,
@@ -17,6 +18,7 @@ impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Expression::Number(value) => write!(f, "{}", value),
+            Expression::Boolean(value) => write!(f, "{}", value),
             Expression::Add {
                 ref left,
                 ref right,
@@ -33,6 +35,7 @@ impl Expression {
     fn is_reducible(&self) -> bool {
         match *self {
             Expression::Number(_) => false,
+            Expression::Boolean(_) => false,
             _ => true,
         }
     }
@@ -129,4 +132,7 @@ fn main() {
         expression: expression,
     };
     machine.run();
+
+    println!("--");
+    println!("{}", Expression::Boolean(true));
 }
