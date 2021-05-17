@@ -122,7 +122,7 @@ impl Expression {
                 }
             }
             Expression::Variable(ref name) => {
-                if let Some(&expression) = environment.get(&*name) {
+                if let Some(&expression) = environment.get(&name) {
                     expression
                 } else {
                     panic!("undefined variable")
@@ -140,7 +140,7 @@ struct Machine {
 
 impl Machine {
     fn step(&mut self) {
-        self.expression = self.expression.reduce(self.environment)
+        self.expression = self.expression.reduce(self.environment.clone())
     }
     fn run(&mut self) {
         while self.expression.is_reducible() {
