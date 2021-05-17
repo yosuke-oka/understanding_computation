@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Clone)]
@@ -16,6 +17,7 @@ enum Expression {
         left: Box<Expression>,
         right: Box<Expression>,
     },
+    Variable(String),
 }
 
 impl fmt::Display for Expression {
@@ -23,6 +25,7 @@ impl fmt::Display for Expression {
         match *self {
             Expression::Number(value) => write!(f, "{}", value),
             Expression::Boolean(value) => write!(f, "{}", value),
+            Expression::Variable(ref name) => write!(f, "{}", name),
             Expression::Add {
                 ref left,
                 ref right,
@@ -47,7 +50,7 @@ impl Expression {
             _ => true,
         }
     }
-    fn reduce(&self) -> Box<Expression> {
+    fn reduce(&self, environment: HashMap<String, Box<Expression>>) -> Box<Expression> {
         match *self {
             Expression::Add {
                 ref left,
@@ -55,13 +58,13 @@ impl Expression {
             } => {
                 if left.is_reducible() {
                     Box::new(Expression::Add {
-                        left: left.reduce(),
+                        left: left.reduce(environment),
                         right: right.clone(),
                     })
                 } else if right.is_reducible() {
                     Box::new(Expression::Add {
                         left: left.clone(),
-                        right: right.reduce(),
+                        right: right.reduce(environment),
                     })
                 } else {
                     match (left.as_ref(), right.as_ref()) {
@@ -78,13 +81,13 @@ impl Expression {
             } => {
                 if left.is_reducible() {
                     Box::new(Expression::Multiply {
-                        left: left.reduce(),
+                        left: left.reduce(environment),
                         right: right.clone(),
                     })
                 } else if right.is_reducible() {
                     Box::new(Expression::Multiply {
                         left: left.clone(),
-                        right: right.reduce(),
+                        right: right.reduce(environment),
                     })
                 } else {
                     match (left.as_ref(), right.as_ref()) {
@@ -101,13 +104,13 @@ impl Expression {
             } => {
                 if left.is_reducible() {
                     Box::new(Expression::LessThan {
-                        left: left.reduce(),
+                        left: left.reduce(environment),
                         right: right.clone(),
                     })
                 } else if right.is_reducible() {
                     Box::new(Expression::LessThan {
                         left: left.clone(),
-                        right: right.reduce(),
+                        right: right.reduce(environment),
                     })
                 } else {
                     match (left.as_ref(), right.as_ref()) {
@@ -118,6 +121,13 @@ impl Expression {
                     }
                 }
             }
+            Expression::Variable(ref name) => {
+                if let Some(&expression) = environment.get(&*name) {
+                    expression
+                } else {
+                    panic!("undefined variable")
+                }
+            }
             _ => panic!("mada jissou sitenai"),
         }
     }
@@ -125,11 +135,12 @@ impl Expression {
 
 struct Machine {
     expression: Box<Expression>,
+    environment: HashMap<String, Box<Expression>>,
 }
 
 impl Machine {
     fn step(&mut self) {
-        self.expression = self.expression.reduce()
+        self.expression = self.expression.reduce(self.environment)
     }
     fn run(&mut self) {
         while self.expression.is_reducible() {
@@ -151,16 +162,10 @@ fn main() {
             right: Box::new(Expression::Number(4)),
         }),
     });
-    println!("{}", expression);
-    println!("{}", expression.is_reducible());
-    println!("{}", Expression::Number(1).is_reducible());
-    println!("{}", expression.reduce());
-    println!("{}", expression.reduce().reduce());
-    println!("{}", expression.reduce().reduce().reduce());
-    println!("--");
 
     let mut machine = Machine {
         expression: expression,
+        environment: HashMap::new(),
     };
     machine.run();
 
@@ -175,6 +180,9 @@ fn main() {
 
     let mut machine = Machine {
         expression: expression,
+        environment: HashMap::new(),
     };
     machine.run();
+
+    println!("--");
 }
