@@ -12,6 +12,10 @@ enum Expression {
         left: Box<Expression>,
         right: Box<Expression>,
     },
+    LessThan {
+        left: Box<Expression>,
+        right: Box<Expression>,
+    },
 }
 
 impl fmt::Display for Expression {
@@ -27,6 +31,10 @@ impl fmt::Display for Expression {
                 ref left,
                 ref right,
             } => write!(f, "{} * {}", left, right),
+            Expression::LessThan {
+                ref left,
+                ref right,
+            } => write!(f, "{} < {}", left, right),
         }
     }
 }
@@ -87,6 +95,29 @@ impl Expression {
                     }
                 }
             }
+            Expression::LessThan {
+                ref left,
+                ref right,
+            } => {
+                if left.is_reducible() {
+                    Box::new(Expression::LessThan {
+                        left: left.reduce(),
+                        right: right.clone(),
+                    })
+                } else if right.is_reducible() {
+                    Box::new(Expression::LessThan {
+                        left: left.clone(),
+                        right: right.reduce(),
+                    })
+                } else {
+                    match (left.as_ref(), right.as_ref()) {
+                        (Expression::Number(left_value), Expression::Number(right_value)) => {
+                            Box::new(Expression::Boolean(left_value < right_value))
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+            }
             _ => panic!("mada jissou sitenai"),
         }
     }
@@ -134,5 +165,16 @@ fn main() {
     machine.run();
 
     println!("--");
-    println!("{}", Expression::Boolean(true));
+    let expression = Box::new(Expression::LessThan {
+        left: Box::new(Expression::Number(5)),
+        right: Box::new(Expression::Add {
+            left: Box::new(Expression::Number(2)),
+            right: Box::new(Expression::Number(2)),
+        }),
+    });
+
+    let mut machine = Machine {
+        expression: expression,
+    };
+    machine.run();
 }
