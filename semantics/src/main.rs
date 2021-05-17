@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum Expression {
     Number(u32),
     Boolean(bool),
@@ -46,7 +46,7 @@ impl fmt::Display for Expression {
 
 impl Expression {
     fn is_reducible(&self) -> bool {
-        match *self {
+        match self {
             Expression::Number(_) => false,
             Expression::Boolean(_) => false,
             _ => true,
@@ -130,7 +130,53 @@ impl Expression {
                     panic!("undefined variable")
                 }
             }
-            _ => panic!("mada jissou sitenai"),
+            _ => unreachable!(),
+        }
+    }
+}
+
+enum Statement {
+    DoNothing,
+    Assignment {
+        name: String,
+        expression: Box<Expression>,
+    },
+}
+
+impl fmt::Display for Statement {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Statement::DoNothing => write!(f, "do-nothing"),
+            Statement::Assignment { name, expression } => write!(f, "{} = {}", name, expression),
+        }
+    }
+}
+
+impl Statement {
+    fn is_reducible(&self) -> bool {
+        match self {
+            Statement::DoNothing => false,
+            _ => true,
+        }
+    }
+    fn reduce(&self, environment: &mut Environment) -> (Statement, Environment) {
+        match self {
+            Statement::Assignment { name, expression } => {
+                if expression.is_reducible() {
+                    (
+                        Statement::Assignment {
+                            name: name.clone(),
+                            expression: expression.reduce(environment),
+                        },
+                        environment.clone(),
+                    )
+                } else {
+                    let mut new_env = environment.clone();
+                    new_env.insert(String::from(name), expression.clone());
+                    (Statement::DoNothing, new_env)
+                }
+            }
+            _ => unreachable!(),
         }
     }
 }
@@ -201,4 +247,28 @@ fn main() {
         environment: environment,
     };
     machine.run();
+
+    println!("--");
+
+    let expression = Box::new(Expression::Add {
+        left: Box::new(Expression::Variable(String::from("x"))),
+        right: Box::new(Expression::Number(1)),
+    });
+    let statement = Statement::Assignment {
+        name: String::from("x"),
+        expression: expression,
+    };
+
+    let mut environment = HashMap::new();
+    environment.insert(String::from("x"), Box::new(Expression::Number(2)));
+
+    println!("{}", statement);
+
+    let mut x = statement.reduce(&mut environment);
+    println!("{}, {:?}", x.0, x.1);
+    let mut x = x.0.reduce(&mut x.1);
+    println!("{}, {:?}", x.0, x.1);
+    let x = x.0.reduce(&mut x.1);
+    println!("{}, {:?}", x.0, x.1);
+    println!("{}", x.0.is_reducible());
 }
