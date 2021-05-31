@@ -18,6 +18,10 @@ pub enum Statement {
         first: Box<Statement>,
         second: Box<Statement>,
     },
+    While {
+        condition: Expression,
+        body: Box<Statement>,
+    },
 }
 
 impl fmt::Display for Statement {
@@ -35,6 +39,9 @@ impl fmt::Display for Statement {
                 condition, consequence, alternative
             ),
             Statement::Sequence { first, second } => write!(f, "{}; {}", first, second),
+            Statement::While { condition, body } => {
+                write!(f, "while ({}), {{ {} }}", condition, body)
+            }
         }
     }
 }
@@ -99,6 +106,17 @@ impl Statement {
                     )
                 }
             }
+            Statement::While { condition, body } => (
+                Statement::If {
+                    condition: condition.clone(),
+                    consequence: Box::new(Statement::Sequence {
+                        first: body.clone(),
+                        second: Box::new(self.clone()),
+                    }),
+                    alternative: Box::new(Statement::DoNothing),
+                },
+                environment.clone(),
+            ),
             _ => unreachable!(),
         }
     }

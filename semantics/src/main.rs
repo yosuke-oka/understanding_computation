@@ -65,4 +65,26 @@ fn main() {
         environment: HashMap::new(),
     };
     machine.run();
+
+    println!("--");
+
+    let mut environment = HashMap::new();
+    environment.insert(String::from("x"), Expression::Number(1));
+    let mut machine = Machine {
+        statement: Statement::While {
+            condition: Expression::LessThan {
+                left: Box::new(Expression::Variable(String::from("x"))),
+                right: Box::new(Expression::Number(5)),
+            },
+            body: Box::new(Statement::Assignment {
+                name: String::from("x"),
+                expression: Expression::Multiply {
+                    left: Box::new(Expression::Variable(String::from("x"))),
+                    right: Box::new(Expression::Number(3)),
+                },
+            }),
+        },
+        environment: environment,
+    };
+    machine.run();
 }
