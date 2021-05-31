@@ -20,7 +20,7 @@ enum Expression {
     Variable(String),
 }
 
-type Environment = HashMap<String, Box<Expression>>;
+type Environment = HashMap<String, Expression>;
 
 impl fmt::Display for Expression {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -52,26 +52,26 @@ impl Expression {
             _ => true,
         }
     }
-    fn reduce(&self, environment: &Environment) -> Box<Expression> {
+    fn reduce(&self, environment: &Environment) -> Expression {
         match self {
             Expression::Add {
                 ref left,
                 ref right,
             } => {
                 if left.is_reducible() {
-                    Box::new(Expression::Add {
-                        left: left.reduce(environment),
+                    Expression::Add {
+                        left: Box::new(left.reduce(environment)),
                         right: right.clone(),
-                    })
+                    }
                 } else if right.is_reducible() {
-                    Box::new(Expression::Add {
+                    Expression::Add {
                         left: left.clone(),
-                        right: right.reduce(environment),
-                    })
+                        right: Box::new(right.reduce(environment)),
+                    }
                 } else {
                     match (left.as_ref(), right.as_ref()) {
                         (Expression::Number(left_value), Expression::Number(right_value)) => {
-                            Box::new(Expression::Number(left_value + right_value))
+                            Expression::Number(left_value + right_value)
                         }
                         _ => unreachable!(),
                     }
@@ -82,19 +82,19 @@ impl Expression {
                 ref right,
             } => {
                 if left.is_reducible() {
-                    Box::new(Expression::Multiply {
-                        left: left.reduce(environment),
+                    Expression::Multiply {
+                        left: Box::new(left.reduce(environment)),
                         right: right.clone(),
-                    })
+                    }
                 } else if right.is_reducible() {
-                    Box::new(Expression::Multiply {
+                    Expression::Multiply {
                         left: left.clone(),
-                        right: right.reduce(environment),
-                    })
+                        right: Box::new(right.reduce(environment)),
+                    }
                 } else {
                     match (left.as_ref(), right.as_ref()) {
                         (Expression::Number(left_value), Expression::Number(right_value)) => {
-                            Box::new(Expression::Number(left_value * right_value))
+                            Expression::Number(left_value * right_value)
                         }
                         _ => unreachable!(),
                     }
@@ -105,19 +105,19 @@ impl Expression {
                 ref right,
             } => {
                 if left.is_reducible() {
-                    Box::new(Expression::LessThan {
-                        left: left.reduce(environment),
+                    Expression::LessThan {
+                        left: Box::new(left.reduce(environment)),
                         right: right.clone(),
-                    })
+                    }
                 } else if right.is_reducible() {
-                    Box::new(Expression::LessThan {
+                    Expression::LessThan {
                         left: left.clone(),
-                        right: right.reduce(environment),
-                    })
+                        right: Box::new(right.reduce(environment)),
+                    }
                 } else {
                     match (left.as_ref(), right.as_ref()) {
                         (Expression::Number(left_value), Expression::Number(right_value)) => {
-                            Box::new(Expression::Boolean(left_value < right_value))
+                            Expression::Boolean(left_value < right_value)
                         }
                         _ => unreachable!(),
                     }
@@ -140,10 +140,10 @@ enum Statement {
     DoNothing,
     Assignment {
         name: String,
-        expression: Box<Expression>,
+        expression: Expression,
     },
     If {
-        condition: Box<Expression>,
+        condition: Expression,
         consequence: Box<Statement>,
         alternative: Box<Statement>,
     },
@@ -174,21 +174,21 @@ impl Statement {
             _ => true,
         }
     }
-    fn reduce(&self, environment: &mut Environment) -> (Box<Statement>, Environment) {
+    fn reduce(&self, environment: &mut Environment) -> (Statement, Environment) {
         match self {
             Statement::Assignment { name, expression } => {
                 if expression.is_reducible() {
                     (
-                        Box::new(Statement::Assignment {
+                        Statement::Assignment {
                             name: name.clone(),
                             expression: expression.reduce(environment),
-                        }),
+                        },
                         environment.clone(),
                     )
                 } else {
                     let mut new_env = environment.clone();
                     new_env.insert(String::from(name), expression.clone());
-                    (Box::new(Statement::DoNothing), new_env)
+                    (Statement::DoNothing, new_env)
                 }
             }
             Statement::If {
@@ -198,17 +198,17 @@ impl Statement {
             } => {
                 if condition.is_reducible() {
                     (
-                        Box::new(Statement::If {
+                        Statement::If {
                             condition: condition.reduce(environment),
                             consequence: consequence.clone(),
                             alternative: alternative.clone(),
-                        }),
+                        },
                         environment.clone(),
                     )
                 } else {
-                    match **condition {
-                        Expression::Boolean(true) => (consequence.clone(), environment.clone()),
-                        Expression::Boolean(false) => (alternative.clone(), environment.clone()),
+                    match condition {
+                        Expression::Boolean(true) => (*consequence.clone(), environment.clone()),
+                        Expression::Boolean(false) => (*alternative.clone(), environment.clone()),
                         _ => panic!("condition is not bool"),
                     }
                 }
@@ -228,7 +228,7 @@ impl Machine {
         // 以下のようには現バージョンだと書けない？
         // (self.statement, self.environment) = self.statement.reduce(&self.environment)
         let (new_statement, new_env) = self.statement.reduce(&mut self.environment);
-        self.statement = *new_statement;
+        self.statement = new_statement;
         self.environment = new_env;
     }
     fn run(&mut self) {
@@ -291,17 +291,17 @@ fn main() {
 
     //println!("--");
 
-    let expression = Box::new(Expression::Add {
+    let expression = Expression::Add {
         left: Box::new(Expression::Variable(String::from("x"))),
         right: Box::new(Expression::Number(1)),
-    });
+    };
     let statement = Statement::Assignment {
         name: String::from("x"),
         expression: expression,
     };
 
     let mut environment = HashMap::new();
-    environment.insert(String::from("x"), Box::new(Expression::Number(2)));
+    environment.insert(String::from("x"), Expression::Number(2));
 
     let mut machine = Machine {
         statement: statement,
@@ -313,17 +313,17 @@ fn main() {
     println!("--");
 
     let mut environment = HashMap::new();
-    environment.insert(String::from("x"), Box::new(Expression::Boolean(true)));
+    environment.insert(String::from("x"), Expression::Boolean(true));
     let mut machine = Machine {
         statement: Statement::If {
-            condition: Box::new(Expression::Variable(String::from("x"))),
+            condition: Expression::Variable(String::from("x")),
             consequence: Box::new(Statement::Assignment {
                 name: String::from("y"),
-                expression: Box::new(Expression::Number(1)),
+                expression: Expression::Number(1),
             }),
             alternative: Box::new(Statement::Assignment {
                 name: String::from("y"),
-                expression: Box::new(Expression::Number(2)),
+                expression: Expression::Number(2),
             }),
         },
         environment: environment,
