@@ -188,10 +188,11 @@ struct Machine {
 
 impl Machine {
     fn step(&mut self) {
-        //(self.statement, self.environment) = self.statement.reduce(&self.environment)
-        let mut x = self.statement.reduce(&mut self.environment);
-        self.statement = x.0;
-        self.environment = x.1;
+        // 以下のようには現バージョンだと書けない？
+        // (self.statement, self.environment) = self.statement.reduce(&self.environment)
+        let (new_statement, new_env) = self.statement.reduce(&mut self.environment);
+        self.statement = new_statement;
+        self.environment = new_env;
     }
     fn run(&mut self) {
         while self.statement.is_reducible() {
