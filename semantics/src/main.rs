@@ -219,7 +219,7 @@ impl Statement {
 }
 
 struct Machine {
-    statement: Box<Statement>,
+    statement: Statement,
     environment: Environment,
 }
 
@@ -228,7 +228,7 @@ impl Machine {
         // 以下のようには現バージョンだと書けない？
         // (self.statement, self.environment) = self.statement.reduce(&self.environment)
         let (new_statement, new_env) = self.statement.reduce(&mut self.environment);
-        self.statement = new_statement;
+        self.statement = *new_statement;
         self.environment = new_env;
     }
     fn run(&mut self) {
@@ -295,10 +295,10 @@ fn main() {
         left: Box::new(Expression::Variable(String::from("x"))),
         right: Box::new(Expression::Number(1)),
     });
-    let statement = Box::new(Statement::Assignment {
+    let statement = Statement::Assignment {
         name: String::from("x"),
         expression: expression,
-    });
+    };
 
     let mut environment = HashMap::new();
     environment.insert(String::from("x"), Box::new(Expression::Number(2)));
@@ -315,7 +315,7 @@ fn main() {
     let mut environment = HashMap::new();
     environment.insert(String::from("x"), Box::new(Expression::Boolean(true)));
     let mut machine = Machine {
-        statement: Box::new(Statement::If {
+        statement: Statement::If {
             condition: Box::new(Expression::Variable(String::from("x"))),
             consequence: Box::new(Statement::Assignment {
                 name: String::from("y"),
@@ -325,7 +325,7 @@ fn main() {
                 name: String::from("y"),
                 expression: Box::new(Expression::Number(2)),
             }),
-        }),
+        },
         environment: environment,
     };
     machine.run();
