@@ -42,4 +42,27 @@ fn main() {
         environment: environment,
     };
     machine.run();
+
+    println!("--");
+
+    let mut machine = Machine {
+        statement: Statement::Sequence {
+            first: Box::new(Statement::Assignment {
+                name: String::from("x"),
+                expression: Expression::Add {
+                    left: Box::new(Expression::Number(1)),
+                    right: Box::new(Expression::Number(1)),
+                },
+            }),
+            second: Box::new(Statement::Assignment {
+                name: String::from("y"),
+                expression: Expression::Add {
+                    left: Box::new(Expression::Variable(String::from("x"))),
+                    right: Box::new(Expression::Number(3)),
+                },
+            }),
+        },
+        environment: HashMap::new(),
+    };
+    machine.run();
 }

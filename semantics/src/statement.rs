@@ -14,6 +14,10 @@ pub enum Statement {
         consequence: Box<Statement>,
         alternative: Box<Statement>,
     },
+    Sequence {
+        first: Box<Statement>,
+        second: Box<Statement>,
+    },
 }
 
 impl fmt::Display for Statement {
@@ -30,6 +34,7 @@ impl fmt::Display for Statement {
                 "if ({}) {{ {} }} else {{ {} }}",
                 condition, consequence, alternative
             ),
+            Statement::Sequence { first, second } => write!(f, "{}; {}", first, second),
         }
     }
 }
@@ -78,6 +83,20 @@ impl Statement {
                         Expression::Boolean(false) => (*alternative.clone(), environment.clone()),
                         _ => panic!("condition is not bool"),
                     }
+                }
+            }
+            Statement::Sequence { first, second } => {
+                if let Statement::DoNothing = **first {
+                    (*second.clone(), environment.clone())
+                } else {
+                    let (reduced_first, reduced_env) = first.reduce(environment);
+                    (
+                        Statement::Sequence {
+                            first: Box::new(reduced_first),
+                            second: second.clone(),
+                        },
+                        reduced_env,
+                    )
                 }
             }
             _ => unreachable!(),
