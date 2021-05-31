@@ -135,11 +135,17 @@ impl Expression {
     }
 }
 
+#[derive(Clone, Debug)]
 enum Statement {
     DoNothing,
     Assignment {
         name: String,
         expression: Box<Expression>,
+    },
+    If {
+        condition: Box<Expression>,
+        consequence: Box<Statement>,
+        alternative: Box<Statement>,
     },
 }
 
@@ -148,6 +154,15 @@ impl fmt::Display for Statement {
         match self {
             Statement::DoNothing => write!(f, "do-nothing"),
             Statement::Assignment { name, expression } => write!(f, "{} = {}", name, expression),
+            Statement::If {
+                condition,
+                consequence,
+                alternative,
+            } => write!(
+                f,
+                "if ({}) {{ {} }} else {{ {} }}",
+                condition, consequence, alternative
+            ),
         }
     }
 }
@@ -159,21 +174,43 @@ impl Statement {
             _ => true,
         }
     }
-    fn reduce(&self, environment: &mut Environment) -> (Statement, Environment) {
+    fn reduce(&self, environment: &mut Environment) -> (Box<Statement>, Environment) {
         match self {
             Statement::Assignment { name, expression } => {
                 if expression.is_reducible() {
                     (
-                        Statement::Assignment {
+                        Box::new(Statement::Assignment {
                             name: name.clone(),
                             expression: expression.reduce(environment),
-                        },
+                        }),
                         environment.clone(),
                     )
                 } else {
                     let mut new_env = environment.clone();
                     new_env.insert(String::from(name), expression.clone());
-                    (Statement::DoNothing, new_env)
+                    (Box::new(Statement::DoNothing), new_env)
+                }
+            }
+            Statement::If {
+                condition,
+                consequence,
+                alternative,
+            } => {
+                if condition.is_reducible() {
+                    (
+                        Box::new(Statement::If {
+                            condition: condition.reduce(environment),
+                            consequence: consequence.clone(),
+                            alternative: alternative.clone(),
+                        }),
+                        environment.clone(),
+                    )
+                } else {
+                    match **condition {
+                        Expression::Boolean(true) => (consequence.clone(), environment.clone()),
+                        Expression::Boolean(false) => (alternative.clone(), environment.clone()),
+                        _ => panic!("condition is not bool"),
+                    }
                 }
             }
             _ => unreachable!(),
@@ -182,7 +219,7 @@ impl Statement {
 }
 
 struct Machine {
-    statement: Statement,
+    statement: Box<Statement>,
     environment: Environment,
 }
 
@@ -253,16 +290,15 @@ fn main() {
     //machine.run();
 
     //println!("--");
-    println!("--");
 
     let expression = Box::new(Expression::Add {
         left: Box::new(Expression::Variable(String::from("x"))),
         right: Box::new(Expression::Number(1)),
     });
-    let statement = Statement::Assignment {
+    let statement = Box::new(Statement::Assignment {
         name: String::from("x"),
         expression: expression,
-    };
+    });
 
     let mut environment = HashMap::new();
     environment.insert(String::from("x"), Box::new(Expression::Number(2)));
@@ -272,5 +308,25 @@ fn main() {
         environment: environment,
     };
 
+    machine.run();
+
+    println!("--");
+
+    let mut environment = HashMap::new();
+    environment.insert(String::from("x"), Box::new(Expression::Boolean(true)));
+    let mut machine = Machine {
+        statement: Box::new(Statement::If {
+            condition: Box::new(Expression::Variable(String::from("x"))),
+            consequence: Box::new(Statement::Assignment {
+                name: String::from("y"),
+                expression: Box::new(Expression::Number(1)),
+            }),
+            alternative: Box::new(Statement::Assignment {
+                name: String::from("y"),
+                expression: Box::new(Expression::Number(2)),
+            }),
+        }),
+        environment: environment,
+    };
     machine.run();
 }
