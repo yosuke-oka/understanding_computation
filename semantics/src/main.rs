@@ -182,72 +182,76 @@ impl Statement {
 }
 
 struct Machine {
-    expression: Box<Expression>,
+    statement: Statement,
     environment: Environment,
 }
 
 impl Machine {
     fn step(&mut self) {
-        self.expression = self.expression.reduce(&self.environment)
+        //(self.statement, self.environment) = self.statement.reduce(&self.environment)
+        let mut x = self.statement.reduce(&mut self.environment);
+        self.statement = x.0;
+        self.environment = x.1;
     }
     fn run(&mut self) {
-        while self.expression.is_reducible() {
-            println!("{}", self.expression);
+        while self.statement.is_reducible() {
+            println!("{}, {:?}", self.statement, self.environment);
             self.step();
         }
-        println!("{}", self.expression);
+        println!("{}, {:?}", self.statement, self.environment);
     }
 }
 
 fn main() {
-    let expression = Box::new(Expression::Add {
-        left: Box::new(Expression::Multiply {
-            left: Box::new(Expression::Number(1)),
-            right: Box::new(Expression::Number(2)),
-        }),
-        right: Box::new(Expression::Multiply {
-            left: Box::new(Expression::Number(3)),
-            right: Box::new(Expression::Number(4)),
-        }),
-    });
+    //let expression = Box::new(Expression::Add {
+    //    left: Box::new(Expression::Multiply {
+    //        left: Box::new(Expression::Number(1)),
+    //        right: Box::new(Expression::Number(2)),
+    //    }),
+    //    right: Box::new(Expression::Multiply {
+    //        left: Box::new(Expression::Number(3)),
+    //        right: Box::new(Expression::Number(4)),
+    //    }),
+    //});
 
-    let mut machine = Machine {
-        expression: expression,
-        environment: HashMap::new(),
-    };
-    machine.run();
+    //let mut machine = Machine {
+    //    expression: expression,
+    //    environment: HashMap::new(),
+    //};
+    //machine.run();
 
-    println!("--");
-    let expression = Box::new(Expression::LessThan {
-        left: Box::new(Expression::Number(5)),
-        right: Box::new(Expression::Add {
-            left: Box::new(Expression::Number(2)),
-            right: Box::new(Expression::Number(2)),
-        }),
-    });
+    //println!("--");
+    //let expression = Box::new(Expression::LessThan {
+    //    left: Box::new(Expression::Number(5)),
+    //    right: Box::new(Expression::Add {
+    //        left: Box::new(Expression::Number(2)),
+    //        right: Box::new(Expression::Number(2)),
+    //    }),
+    //});
 
-    let mut machine = Machine {
-        expression: expression,
-        environment: HashMap::new(),
-    };
-    machine.run();
+    //let mut machine = Machine {
+    //    expression: expression,
+    //    environment: HashMap::new(),
+    //};
+    //machine.run();
 
-    println!("--");
+    //println!("--");
 
-    let expression = Box::new(Expression::Add {
-        left: Box::new(Expression::Variable(String::from("x"))),
-        right: Box::new(Expression::Variable(String::from("y"))),
-    });
-    let mut environment = HashMap::new();
-    environment.insert(String::from("x"), Box::new(Expression::Number(3)));
-    environment.insert(String::from("y"), Box::new(Expression::Number(4)));
+    //let expression = Box::new(Expression::Add {
+    //    left: Box::new(Expression::Variable(String::from("x"))),
+    //    right: Box::new(Expression::Variable(String::from("y"))),
+    //});
+    //let mut environment = HashMap::new();
+    //environment.insert(String::from("x"), Box::new(Expression::Number(3)));
+    //environment.insert(String::from("y"), Box::new(Expression::Number(4)));
 
-    let mut machine = Machine {
-        expression: expression,
-        environment: environment,
-    };
-    machine.run();
+    //let mut machine = Machine {
+    //    expression: expression,
+    //    environment: environment,
+    //};
+    //machine.run();
 
+    //println!("--");
     println!("--");
 
     let expression = Box::new(Expression::Add {
@@ -262,13 +266,10 @@ fn main() {
     let mut environment = HashMap::new();
     environment.insert(String::from("x"), Box::new(Expression::Number(2)));
 
-    println!("{}", statement);
+    let mut machine = Machine {
+        statement: statement,
+        environment: environment,
+    };
 
-    let mut x = statement.reduce(&mut environment);
-    println!("{}, {:?}", x.0, x.1);
-    let mut x = x.0.reduce(&mut x.1);
-    println!("{}, {:?}", x.0, x.1);
-    let x = x.0.reduce(&mut x.1);
-    println!("{}, {:?}", x.0, x.1);
-    println!("{}", x.0.is_reducible());
+    machine.run();
 }
