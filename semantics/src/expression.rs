@@ -133,4 +133,45 @@ impl Expression {
             _ => unreachable!(),
         }
     }
+
+    pub fn evaluate(&self, environment: &Environment) -> Expression {
+        match self {
+            Expression::Number(_) => self.clone(),
+            Expression::Boolean(_) => self.clone(),
+            Expression::Variable(name) => {
+                if let Some(expression) = environment.get(name) {
+                    expression.clone()
+                } else {
+                    panic!("undefined variable")
+                }
+            }
+            Expression::Add {
+                ref left,
+                ref right,
+            } => match (left.evaluate(environment), right.evaluate(environment)) {
+                (Expression::Number(left_value), Expression::Number(right_value)) => {
+                    Expression::Number(left_value + right_value)
+                }
+                _ => unreachable!(),
+            },
+            Expression::Multiply {
+                ref left,
+                ref right,
+            } => match (left.evaluate(environment), right.evaluate(environment)) {
+                (Expression::Number(left_value), Expression::Number(right_value)) => {
+                    Expression::Number(left_value * right_value)
+                }
+                _ => unreachable!(),
+            },
+            Expression::LessThan {
+                ref left,
+                ref right,
+            } => match (left.evaluate(environment), right.evaluate(environment)) {
+                (Expression::Number(left_value), Expression::Number(right_value)) => {
+                    Expression::Boolean(left_value < right_value)
+                }
+                _ => unreachable!(),
+            },
+        }
+    }
 }

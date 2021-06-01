@@ -120,4 +120,30 @@ impl Statement {
             _ => unreachable!(),
         }
     }
+    pub fn evaluate(&self, environment: &mut Environment) -> Environment {
+        match self {
+            Statement::DoNothing => environment.clone(),
+            Statement::Assignment { name, expression } => {
+                environment.insert(name.to_string(), expression.evaluate(environment));
+                environment.clone()
+            }
+            Statement::If {
+                condition,
+                consequence,
+                alternative,
+            } => match condition.evaluate(environment) {
+                Expression::Boolean(true) => consequence.evaluate(environment),
+                Expression::Boolean(false) => alternative.evaluate(environment),
+                _ => panic!("condition is not bool"),
+            },
+            Statement::While { condition, body } => match condition.evaluate(environment) {
+                Expression::Boolean(true) => self.evaluate(&mut body.evaluate(environment)),
+                Expression::Boolean(false) => environment.clone(),
+                _ => panic!("condition is not bool"),
+            },
+            Statement::Sequence { first, second } => {
+                second.evaluate(&mut first.evaluate(environment))
+            }
+        }
+    }
 }
