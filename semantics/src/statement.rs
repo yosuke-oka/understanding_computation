@@ -146,4 +146,42 @@ impl Statement {
             }
         }
     }
+    pub fn to_ruby(&self) -> String {
+        match self {
+            Statement::DoNothing => "-> e { e }".to_string(),
+            Statement::Assignment { name, expression } => {
+                format!(
+                    "-> e {{ e.merge({{ :{} => ({}).call(e) }}) }}",
+                    name,
+                    expression.to_ruby()
+                )
+            }
+            Statement::If {
+                condition,
+                consequence,
+                alternative,
+            } => {
+                format!(
+                    "-> e {{ if({}).call(e) then ({}).call(e) else ({}).call(e) end }}",
+                    condition.to_ruby(),
+                    consequence.to_ruby(),
+                    alternative.to_ruby()
+                )
+            }
+            Statement::Sequence { first, second } => {
+                format!(
+                    "-> e {{ ({}).call(({}).call(e)) }}",
+                    second.to_ruby(),
+                    first.to_ruby()
+                )
+            }
+            Statement::While { condition, body } => {
+                format!(
+                    "-> e {{ while ({}).call(e); e = ({}).call(e); end; e }}",
+                    condition.to_ruby(),
+                    body.to_ruby()
+                )
+            }
+        }
+    }
 }

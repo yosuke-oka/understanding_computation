@@ -162,4 +162,41 @@ fn main() {
         right: Box::new(Expression::Number(3)),
     };
     println!("{}", exp.to_ruby());
+
+    let stat = Statement::Assignment {
+        name: String::from("y"),
+        expression: Expression::Add {
+            left: Box::new(Expression::Variable(String::from("x"))),
+            right: Box::new(Expression::Number(3)),
+        },
+    };
+    println!("{}", stat.to_ruby());
+
+    let stat = Statement::If {
+        condition: Expression::Variable(String::from("x")),
+        consequence: Box::new(Statement::Assignment {
+            name: String::from("y"),
+            expression: Expression::Number(1),
+        }),
+        alternative: Box::new(Statement::Assignment {
+            name: String::from("y"),
+            expression: Expression::Number(2),
+        }),
+    };
+    println!("{}", stat.to_ruby());
+
+    let stat = Statement::While {
+        condition: Expression::LessThan {
+            left: Box::new(Expression::Variable(String::from("x"))),
+            right: Box::new(Expression::Number(5)),
+        },
+        body: Box::new(Statement::Assignment {
+            name: String::from("x"),
+            expression: Expression::Multiply {
+                left: Box::new(Expression::Variable(String::from("x"))),
+                right: Box::new(Expression::Number(3)),
+            },
+        }),
+    };
+    println!("{}", stat.to_ruby());
 }
