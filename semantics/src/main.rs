@@ -149,4 +149,17 @@ fn main() {
     let mut environment = HashMap::new();
     environment.insert(String::from("x"), Expression::Number(1));
     println!("{:?}", statement.evaluate(&mut environment));
+
+    println!("-- to_ruby --");
+    println!("{}", Expression::Number(5).to_ruby());
+    println!("{}", Expression::Boolean(false).to_ruby());
+    println!("{}", Expression::Variable(String::from("x")).to_ruby());
+    let exp = Expression::LessThan {
+        left: Box::new(Expression::Add {
+            left: Box::new(Expression::Variable(String::from("x"))),
+            right: Box::new(Expression::Number(1)),
+        }),
+        right: Box::new(Expression::Number(3)),
+    };
+    println!("{}", exp.to_ruby());
 }

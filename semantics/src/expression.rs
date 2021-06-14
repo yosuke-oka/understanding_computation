@@ -174,4 +174,41 @@ impl Expression {
             },
         }
     }
+    pub fn to_ruby(&self) -> String {
+        match self {
+            Expression::Number(value) => format!("-> e {{ {} }}", value),
+            Expression::Boolean(value) => format!("-> e {{ {} }}", value),
+            Expression::Variable(name) => format!("-> e {{ e[:{}] }}", name),
+            Expression::Add {
+                ref left,
+                ref right,
+            } => {
+                format!(
+                    "-> e {{ ({}).call(e) + ({}).call(e) }}",
+                    left.to_ruby(),
+                    right.to_ruby()
+                )
+            }
+            Expression::Multiply {
+                ref left,
+                ref right,
+            } => {
+                format!(
+                    "-> e {{ ({}).call(e) * ({}).call(e) }}",
+                    left.to_ruby(),
+                    right.to_ruby()
+                )
+            }
+            Expression::LessThan {
+                ref left,
+                ref right,
+            } => {
+                format!(
+                    "-> e {{ ({}).call(e) < ({}).call(e) }}",
+                    left.to_ruby(),
+                    right.to_ruby()
+                )
+            }
+        }
+    }
 }
