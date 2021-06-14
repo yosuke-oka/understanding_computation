@@ -1,4 +1,6 @@
+use std::collections::HashSet;
 use std::fmt;
+use std::iter::FromIterator;
 type State = u32;
 
 #[derive(Clone)]
@@ -99,6 +101,33 @@ impl DFADesign {
     }
 }
 
+struct NFARulebook {
+    rules: Vec<FARule>,
+}
+
+impl NFARulebook {
+    fn next_states(&self, states: Vec<State>, character: char) -> HashSet<State> {
+        HashSet::from_iter(
+            states
+                .into_iter()
+                .flat_map(|state| self.follow_rules_for(state, character)),
+        )
+    }
+    fn follow_rules_for(&self, state: State, character: char) -> Vec<State> {
+        self.rules_for(state, character)
+            .iter()
+            .map(|r| r.follow())
+            .collect()
+    }
+    fn rules_for(&self, state: State, character: char) -> Vec<FARule> {
+        self.rules
+            .iter()
+            .filter(|r| r.is_applied_to(state, character))
+            .cloned()
+            .collect()
+    }
+}
+
 fn main() {
     let rulebook = DFARulebook {
         rules: vec![
@@ -115,4 +144,21 @@ fn main() {
     println!("{}", dfa_design.is_accept("a"));
     println!("{}", dfa_design.is_accept("baa"));
     println!("{}", dfa_design.is_accept("baba"));
+
+    println!("-- nfa --");
+
+    let rulebook = NFARulebook {
+        rules: vec![
+            FARule::new((1, 'a', 1)),
+            FARule::new((1, 'b', 1)),
+            FARule::new((1, 'b', 2)),
+            FARule::new((2, 'a', 3)),
+            FARule::new((2, 'b', 3)),
+            FARule::new((3, 'a', 4)),
+            FARule::new((3, 'b', 4)),
+        ],
+    };
+    println!("{:?}", rulebook.next_states(vec![1], 'b'));
+    println!("{:?}", rulebook.next_states(vec![1, 2], 'a'));
+    println!("{:?}", rulebook.next_states(vec![1, 3], 'b'));
 }
