@@ -2,10 +2,7 @@ use std::char;
 use std::collections::HashSet;
 use std::fmt;
 use std::iter::FromIterator;
-
 type State = u32;
-
-const FREE_MOVE: char = '\x00';
 
 #[derive(Clone)]
 struct FARule {
@@ -111,33 +108,25 @@ struct NFARulebook {
 }
 
 impl NFARulebook {
-    fn next_states(&self, states: &HashSet<State>, character: char) -> HashSet<State> {
+    fn next_states(&self, states: HashSet<State>, character: char) -> HashSet<State> {
         HashSet::from_iter(
             states
                 .into_iter()
                 .flat_map(|state| self.follow_rules_for(state, character)),
         )
     }
-    fn follow_rules_for(&self, state: &State, character: char) -> HashSet<State> {
+    fn follow_rules_for(&self, state: State, character: char) -> HashSet<State> {
         self.rules_for(state, character)
             .iter()
             .map(|r| r.follow())
             .collect()
     }
-    fn rules_for(&self, state: &State, character: char) -> Vec<FARule> {
+    fn rules_for(&self, state: State, character: char) -> Vec<FARule> {
         self.rules
             .iter()
-            .filter(|r| r.is_applied_to(*state, character))
+            .filter(|r| r.is_applied_to(state, character))
             .cloned()
             .collect()
-    }
-    fn follow_free_moves(&self, states: &HashSet<State>) -> HashSet<State> {
-        let more_states = self.next_states(states, FREE_MOVE);
-        if more_states.is_subset(states) {
-            states.clone()
-        } else {
-            self.follow_free_moves(&states.union(&more_states).cloned().collect())
-        }
     }
 }
 
@@ -150,7 +139,7 @@ struct NFA {
 impl NFA {
     fn is_accept(&self) -> bool {
         !self
-            .get_current_states()
+            .current_states
             .intersection(&self.accept_states)
             .collect::<HashSet<_>>()
             .is_empty()
@@ -158,15 +147,12 @@ impl NFA {
     fn read_character(&mut self, character: char) -> () {
         self.current_states = self
             .rulebook
-            .next_states(&self.get_current_states(), character)
+            .next_states(self.current_states.clone(), character)
     }
     fn read_string(&mut self, string: &str) -> () {
         for c in string.chars() {
             self.read_character(c);
         }
-    }
-    fn get_current_states(&self) -> HashSet<State> {
-        self.rulebook.follow_free_moves(&self.current_states)
     }
 }
 
@@ -197,6 +183,8 @@ impl NFADesign {
         nfa.is_accept()
     }
 }
+
+const FREE_MOVE: char = \u{0000};
 
 fn main() {
     let rulebook = DFARulebook {
@@ -233,22 +221,4 @@ fn main() {
     println!("{}", nfa_design.is_accept("bab"));
     println!("{}", nfa_design.is_accept("bbbbb"));
     println!("{}", nfa_design.is_accept("bbabb"));
-
-    println!("-- free move --");
-    let rulebook = NFARulebook {
-        rules: vec![
-            FARule::new((1, FREE_MOVE, 2)),
-            FARule::new((1, FREE_MOVE, 4)),
-            FARule::new((2, 'a', 3)),
-            FARule::new((3, 'a', 2)),
-            FARule::new((4, 'a', 5)),
-            FARule::new((5, 'a', 6)),
-            FARule::new((6, 'a', 4)),
-        ],
-    };
-    let nfa_design = NFADesign::new((1, vec![2, 4].into_iter().collect(), rulebook));
-    println!("{}", nfa_design.is_accept("aa"));
-    println!("{}", nfa_design.is_accept("aaa"));
-    println!("{}", nfa_design.is_accept("aaaaa"));
-    println!("{}", nfa_design.is_accept("aaaaaa"));
 }
