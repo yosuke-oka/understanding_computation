@@ -10,6 +10,11 @@ pub struct NFARulebook {
 }
 
 impl NFARulebook {
+    pub fn build(args: Vec<(State, char, State)>) -> NFARulebook {
+        NFARulebook {
+            rules: args.iter().map(|&t| FARule::new(t)).collect(),
+        }
+    }
     fn next_states(&self, states: &HashSet<State>, character: char) -> HashSet<State> {
         HashSet::from_iter(
             states

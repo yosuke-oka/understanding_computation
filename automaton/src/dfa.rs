@@ -7,6 +7,11 @@ pub struct DFARulebook {
 }
 
 impl DFARulebook {
+    pub fn build(args: Vec<(State, char, State)>) -> DFARulebook {
+        DFARulebook {
+            rules: args.iter().map(|&t| FARule::new(t)).collect(),
+        }
+    }
     fn next_state(&self, state: State, character: char) -> State {
         self.rule_for(state, character).follow()
     }
