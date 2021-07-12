@@ -1,3 +1,4 @@
+use crate::state::State;
 use std::fmt;
 
 #[derive(Clone)]
@@ -6,8 +7,6 @@ pub struct FARule {
     character: char,
     next_state: State,
 }
-
-pub type State = u32;
 
 impl FARule {
     pub fn new(arg: (State, char, State)) -> FARule {

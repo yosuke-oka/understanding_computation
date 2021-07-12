@@ -1,4 +1,5 @@
-use crate::fa_rule::{FARule, State};
+use crate::fa_rule::FARule;
+use crate::state::State;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 

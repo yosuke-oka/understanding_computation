@@ -1,5 +1,6 @@
 use crate::nfa::NFADesign;
 use crate::nfa::NFARulebook;
+use crate::state::new_state;
 use std::fmt;
 
 pub enum Pattern {
@@ -64,6 +65,7 @@ impl Pattern {
     pub fn to_nfa_design(&self) -> NFADesign {
         match self {
             Pattern::Empty => {
+                let start_state = new_state();
                 let rulebook = NFARulebook::build(vec![]);
                 NFADesign::new((0, vec![0].into_iter().collect(), rulebook))
             }
