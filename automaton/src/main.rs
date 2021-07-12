@@ -1,5 +1,6 @@
 use automaton::dfa::{DFADesign, DFARulebook};
 use automaton::nfa::{NFADesign, NFARulebook, FREE_MOVE};
+use automaton::pattern::Pattern;
 
 fn main() {
     let rulebook = DFARulebook::build(vec![
@@ -48,4 +49,14 @@ fn main() {
     println!("{}", nfa_design.is_accept("aaa"));
     println!("{}", nfa_design.is_accept("aaaaa"));
     println!("{}", nfa_design.is_accept("aaaaaa"));
+
+    println!("-- regex --");
+    let pattern = Pattern::Repeat(Box::new(Pattern::Choose {
+        first: Box::new(Pattern::Concatnate {
+            first: Box::new(Pattern::Literal('a')),
+            second: Box::new(Pattern::Literal('b')),
+        }),
+        second: Box::new(Pattern::Literal('a')),
+    }));
+    println!("{}", pattern);
 }
