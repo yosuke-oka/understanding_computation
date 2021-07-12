@@ -16,6 +16,12 @@ impl NFARulebook {
             rules: args.iter().map(|&t| FARule::new(t)).collect(),
         }
     }
+    pub fn rules(&self) -> &Vec<FARule> {
+        &self.rules
+    }
+    pub fn rules_mut(&mut self) -> &mut Vec<FARule> {
+        &mut self.rules
+    }
     fn next_states(&self, states: &HashSet<State>, character: char) -> HashSet<State> {
         HashSet::from_iter(
             states
@@ -82,12 +88,21 @@ pub struct NFADesign {
 }
 
 impl NFADesign {
-    pub fn new(arg: (State, HashSet<State>, NFARulebook)) -> NFADesign {
+    pub fn new(arg: (State, Vec<State>, NFARulebook)) -> NFADesign {
         NFADesign {
             start_state: arg.0,
-            accept_states: arg.1,
+            accept_states: arg.1.into_iter().collect(),
             rulebook: arg.2,
         }
+    }
+    pub fn start_state(&self) -> &State {
+        &self.start_state
+    }
+    pub fn accept_states(&self) -> &HashSet<State> {
+        &self.accept_states
+    }
+    pub fn rulebook_mut(&mut self) -> &NFARulebook {
+        &mut self.rulebook
     }
     fn to_nfa(&self) -> NFA {
         NFA {

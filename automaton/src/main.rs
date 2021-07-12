@@ -29,7 +29,7 @@ fn main() {
         (3, 'a', 4),
         (3, 'b', 4),
     ]);
-    let nfa_design = NFADesign::new((1, vec![4].into_iter().collect(), rulebook));
+    let nfa_design = NFADesign::new((1, vec![4], rulebook));
     println!("{}", nfa_design.is_accept("bab"));
     println!("{}", nfa_design.is_accept("bbbbb"));
     println!("{}", nfa_design.is_accept("bbabb"));
@@ -44,7 +44,7 @@ fn main() {
         (5, 'a', 6),
         (6, 'a', 4),
     ]);
-    let nfa_design = NFADesign::new((1, vec![2, 4].into_iter().collect(), rulebook));
+    let nfa_design = NFADesign::new((1, vec![2, 4], rulebook));
     println!("{}", nfa_design.is_accept("aa"));
     println!("{}", nfa_design.is_accept("aaa"));
     println!("{}", nfa_design.is_accept("aaaaa"));
@@ -59,4 +59,7 @@ fn main() {
         second: Box::new(Pattern::Literal('a')),
     }));
     println!("{}", pattern);
+
+    println!("{}", Pattern::Empty.is_match(""));
+    println!("{}", Pattern::Empty.is_match("a"));
 }
