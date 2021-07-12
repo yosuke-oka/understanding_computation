@@ -80,23 +80,18 @@ impl Pattern {
                 NFADesign::new((start_state, vec![accept_state], rulebook))
             }
             Pattern::Concatnate { first, second } => {
-                let mut first_nfa_design = first.to_nfa_design();
-                let mut second_nfa_design = second.to_nfa_design();
-                let mut extra_rules = first_nfa_design
-                    .accept_states()
-                    .iter()
-                    .map(|s| FARule::new((*s, FREE_MOVE, second_nfa_design.start_state().clone())))
-                    .collect::<Vec<_>>();
+                let first_nfa_design = first.to_nfa_design();
+                let second_nfa_design = second.to_nfa_design();
                 let mut rules = Vec::new();
-                let first_rules = first_nfa_design.rulebook_mut().rules_mut();
-                let second_rules = second_nfa_design.rulebook_mut().rules_mut();
-                rules.append(first_rules);
-                rules.append(second_rules);
-                rules.append(&mut extra_rules);
-                //let rulebook = first_nfa_design
-                //    .rulebook()
-                //    .rules_mut()
-                //    .append(second_nfa_design.rulebook().rules_mut());
+                rules.append(&mut first_nfa_design.rulebook().rules().clone());
+                rules.append(&mut second_nfa_design.rulebook().rules().clone());
+                for s in first_nfa_design.accept_states() {
+                    rules.push(FARule::new((
+                        *s,
+                        FREE_MOVE,
+                        second_nfa_design.start_state().clone(),
+                    )))
+                }
                 NFADesign::new((
                     *first_nfa_design.start_state(),
                     second_nfa_design.accept_states().iter().cloned().collect(),

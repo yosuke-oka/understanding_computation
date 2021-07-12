@@ -62,4 +62,11 @@ fn main() {
 
     println!("{}", Pattern::Empty.is_match(""));
     println!("{}", Pattern::Empty.is_match("a"));
+
+    let pattern = Pattern::Concatnate {
+        first: Box::new(Pattern::Literal('a')),
+        second: Box::new(Pattern::Literal('b')),
+    };
+    println!("{}", pattern.is_match("ab"));
+    println!("{}", pattern.is_match("aa"));
 }

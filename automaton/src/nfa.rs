@@ -19,9 +19,6 @@ impl NFARulebook {
     pub fn rules(&self) -> &Vec<FARule> {
         &self.rules
     }
-    pub fn rules_mut(&mut self) -> &mut Vec<FARule> {
-        &mut self.rules
-    }
     fn next_states(&self, states: &HashSet<State>, character: char) -> HashSet<State> {
         HashSet::from_iter(
             states
@@ -101,8 +98,8 @@ impl NFADesign {
     pub fn accept_states(&self) -> &HashSet<State> {
         &self.accept_states
     }
-    pub fn rulebook_mut(&mut self) -> &NFARulebook {
-        &mut self.rulebook
+    pub fn rulebook(&self) -> &NFARulebook {
+        &self.rulebook
     }
     fn to_nfa(&self) -> NFA {
         NFA {
