@@ -1,3 +1,5 @@
+use crate::nfa::NFADesign;
+use crate::nfa::NFARulebook;
 use std::fmt;
 
 pub enum Pattern {
@@ -37,6 +39,13 @@ impl fmt::Display for Pattern {
 }
 
 impl Pattern {
+    fn bracket(&self, outer_precedence: u32) -> String {
+        if self.precedence() < outer_precedence {
+            format!("({})", self)
+        } else {
+            self.to_string()
+        }
+    }
     pub fn precedence(&self) -> u32 {
         match self {
             Pattern::Empty => 3,
@@ -52,11 +61,13 @@ impl Pattern {
             Pattern::Repeat(_) => 2,
         }
     }
-    pub fn bracket(&self, outer_precedence: u32) -> String {
-        if self.precedence() < outer_precedence {
-            format!("({})", self)
-        } else {
-            self.to_string()
+    pub fn to_nfa_design(&self) -> NFADesign {
+        match self {
+            Pattern::Empty => {
+                let rulebook = NFARulebook::build(vec![]);
+                NFADesign::new((0, vec![0].into_iter().collect(), rulebook))
+            }
+            _ => unreachable!(),
         }
     }
 }
