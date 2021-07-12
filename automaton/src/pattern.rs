@@ -14,6 +14,28 @@ pub enum Pattern {
     Repeat(Box<Pattern>),
 }
 
+impl fmt::Display for Pattern {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Pattern::Empty => write!(f, ""),
+            Pattern::Literal(c) => write!(f, "{}", c),
+            Pattern::Concatnate { first, second } => write!(
+                f,
+                "{}{}",
+                first.bracket(self.precedence()),
+                second.bracket(self.precedence())
+            ),
+            Pattern::Choose { first, second } => write!(
+                f,
+                "{}|{}",
+                first.bracket(self.precedence()),
+                second.bracket(self.precedence())
+            ),
+            Pattern::Repeat(p) => write!(f, "{}*", p.bracket(self.precedence())),
+        }
+    }
+}
+
 impl Pattern {
     pub fn precedence(&self) -> u32 {
         match self {
@@ -35,28 +57,6 @@ impl Pattern {
             format!("({})", self)
         } else {
             self.to_string()
-        }
-    }
-}
-
-impl fmt::Display for Pattern {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Pattern::Empty => write!(f, ""),
-            Pattern::Literal(c) => write!(f, "{}", c),
-            Pattern::Concatnate { first, second } => write!(
-                f,
-                "{}{}",
-                first.bracket(self.precedence()),
-                second.bracket(self.precedence())
-            ),
-            Pattern::Choose { first, second } => write!(
-                f,
-                "{}|{}",
-                first.bracket(self.precedence()),
-                second.bracket(self.precedence())
-            ),
-            Pattern::Repeat(p) => write!(f, "{}*", p.bracket(self.precedence())),
         }
     }
 }
