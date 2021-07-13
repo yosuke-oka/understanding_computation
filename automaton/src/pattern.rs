@@ -136,7 +136,26 @@ impl Pattern {
                 )));
                 NFADesign::new((start_state, accept_states, NFARulebook { rules: rules }))
             }
-            _ => unreachable!(),
+            Pattern::Repeat(pattern) => {
+                let pattern_nfa_design = pattern.to_nfa_design();
+                let start_state = new_state();
+                let mut accept_states = pattern_nfa_design.accept_states().clone();
+                accept_states.insert(start_state);
+                let mut rules = pattern_nfa_design.rulebook().rules().clone();
+                rules.push(FARule::new((
+                    start_state,
+                    FREE_MOVE,
+                    pattern_nfa_design.start_state().clone(),
+                )));
+                for state in pattern_nfa_design.accept_states() {
+                    rules.push(FARule::new((
+                        *state,
+                        FREE_MOVE,
+                        pattern_nfa_design.start_state().clone(),
+                    )))
+                }
+                NFADesign::new((start_state, accept_states, NFARulebook { rules: rules }))
+            }
         }
     }
 }
