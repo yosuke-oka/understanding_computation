@@ -3,6 +3,7 @@ use crate::nfa::NFADesign;
 use crate::nfa::NFARulebook;
 use crate::nfa::FREE_MOVE;
 use crate::state::new_state;
+use std::collections::HashSet;
 use std::fmt;
 
 pub enum Pattern {
@@ -71,20 +72,30 @@ impl Pattern {
         match self {
             Pattern::Empty => {
                 let start_state = new_state();
-                NFADesign::new((start_state, vec![start_state], NFARulebook::build(vec![])))
+                NFADesign::new((
+                    start_state,
+                    vec![start_state].iter().cloned().collect(),
+                    NFARulebook::build(vec![]),
+                ))
             }
             Pattern::Literal(c) => {
                 let start_state = new_state();
                 let accept_state = new_state();
                 let rulebook = NFARulebook::build(vec![(start_state, *c, accept_state)]);
-                NFADesign::new((start_state, vec![accept_state], rulebook))
+                NFADesign::new((
+                    start_state,
+                    vec![accept_state].iter().cloned().collect(),
+                    rulebook,
+                ))
             }
             Pattern::Concatnate { first, second } => {
                 let first_nfa_design = first.to_nfa_design();
                 let second_nfa_design = second.to_nfa_design();
                 let mut rules = Vec::new();
+                // concat first + second rules
                 rules.append(&mut first_nfa_design.rulebook().rules().clone());
                 rules.append(&mut second_nfa_design.rulebook().rules().clone());
+                // first_accept -> free_move -> second_start
                 for s in first_nfa_design.accept_states() {
                     rules.push(FARule::new((
                         *s,
@@ -94,9 +105,36 @@ impl Pattern {
                 }
                 NFADesign::new((
                     *first_nfa_design.start_state(),
-                    second_nfa_design.accept_states().iter().cloned().collect(),
+                    second_nfa_design.accept_states().clone(),
                     NFARulebook { rules: rules },
                 ))
+            }
+            Pattern::Choose { first, second } => {
+                let first_nfa_design = first.to_nfa_design();
+                let second_nfa_design = second.to_nfa_design();
+                let start_state = new_state();
+                let accept_states = first_nfa_design
+                    .accept_states()
+                    .union(second_nfa_design.accept_states())
+                    .cloned()
+                    .collect::<HashSet<_>>();
+                let mut rules = Vec::new();
+                // concat first + second rules
+                rules.append(&mut first_nfa_design.rulebook().rules().clone());
+                rules.append(&mut second_nfa_design.rulebook().rules().clone());
+                // start_state -> free_move -> first_start
+                rules.push(FARule::new((
+                    start_state,
+                    FREE_MOVE,
+                    first_nfa_design.start_state().clone(),
+                )));
+                // start_state -> free_move -> second_start
+                rules.push(FARule::new((
+                    start_state,
+                    FREE_MOVE,
+                    second_nfa_design.start_state().clone(),
+                )));
+                NFADesign::new((start_state, accept_states, NFARulebook { rules: rules }))
             }
             _ => unreachable!(),
         }

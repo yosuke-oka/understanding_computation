@@ -85,10 +85,10 @@ pub struct NFADesign {
 }
 
 impl NFADesign {
-    pub fn new(arg: (State, Vec<State>, NFARulebook)) -> NFADesign {
+    pub fn new(arg: (State, HashSet<State>, NFARulebook)) -> NFADesign {
         NFADesign {
             start_state: arg.0,
-            accept_states: arg.1.into_iter().collect(),
+            accept_states: arg.1,
             rulebook: arg.2,
         }
     }
