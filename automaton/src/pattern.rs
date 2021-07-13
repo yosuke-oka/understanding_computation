@@ -6,6 +6,7 @@ use crate::state::new_state;
 use std::collections::HashSet;
 use std::fmt;
 
+#[derive(Debug, PartialEq)]
 pub enum Pattern {
     Empty,
     Literal(char),
