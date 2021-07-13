@@ -71,3 +71,26 @@ impl DFADesign {
         dfa.is_accept()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dfa_test() {
+        let rulebook = DFARulebook::build(vec![
+            (1, 'a', 2),
+            (1, 'b', 1),
+            (2, 'a', 2),
+            (2, 'b', 3),
+            (3, 'a', 3),
+            (3, 'b', 3),
+        ]);
+
+        let accept_states = vec![3].into_iter().collect();
+        let dfa_design = DFADesign::new((1, accept_states, rulebook));
+        assert!(!dfa_design.is_accept("a"));
+        assert!(!dfa_design.is_accept("baa"));
+        assert!(dfa_design.is_accept("baba"));
+    }
+}

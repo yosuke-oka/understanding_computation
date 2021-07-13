@@ -114,3 +114,43 @@ impl NFADesign {
         nfa.is_accept()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn nfa_test() {
+        let rulebook = NFARulebook::build(vec![
+            (1, 'a', 1),
+            (1, 'b', 1),
+            (1, 'b', 2),
+            (2, 'a', 3),
+            (2, 'b', 3),
+            (3, 'a', 4),
+            (3, 'b', 4),
+        ]);
+        let nfa_design = NFADesign::new((1, vec![4].iter().cloned().collect(), rulebook));
+        assert!(nfa_design.is_accept("bab"));
+        assert!(nfa_design.is_accept("bbbbb"));
+        assert!(!nfa_design.is_accept("bbabb"));
+    }
+
+    #[test]
+    fn free_move_test() {
+        let rulebook = NFARulebook::build(vec![
+            (1, FREE_MOVE, 2),
+            (1, FREE_MOVE, 4),
+            (2, 'a', 3),
+            (3, 'a', 2),
+            (4, 'a', 5),
+            (5, 'a', 6),
+            (6, 'a', 4),
+        ]);
+        let nfa_design = NFADesign::new((1, vec![2, 4].iter().cloned().collect(), rulebook));
+        assert!(nfa_design.is_accept("aa"));
+        assert!(nfa_design.is_accept("aaa"));
+        assert!(!nfa_design.is_accept("aaaaa"));
+        assert!(nfa_design.is_accept("aaaaaa"));
+    }
+}

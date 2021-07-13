@@ -159,3 +159,60 @@ impl Pattern {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pattern_test() {
+        let pattern = Pattern::Repeat(Box::new(Pattern::Choose {
+            first: Box::new(Pattern::Concatnate {
+                first: Box::new(Pattern::Literal('a')),
+                second: Box::new(Pattern::Literal('b')),
+            }),
+            second: Box::new(Pattern::Literal('a')),
+        }));
+
+        assert_eq!(pattern.to_string(), "(ab|a)*");
+    }
+
+    #[test]
+    fn empty_to_nfa_design() {
+        assert!(Pattern::Empty.is_match(""));
+        assert!(!Pattern::Empty.is_match("a"));
+    }
+
+    #[test]
+    fn concatnate_to_nfa_design() {
+        let pattern = Pattern::Concatnate {
+            first: Box::new(Pattern::Literal('a')),
+            second: Box::new(Pattern::Literal('b')),
+        };
+
+        assert!(pattern.is_match("ab"));
+        assert!(!pattern.is_match("aa"));
+    }
+
+    #[test]
+    fn choose_to_nfa_design() {
+        let pattern = Pattern::Choose {
+            first: Box::new(Pattern::Literal('a')),
+            second: Box::new(Pattern::Literal('b')),
+        };
+
+        assert!(pattern.is_match("a"));
+        assert!(pattern.is_match("b"));
+        assert!(!pattern.is_match("c"));
+    }
+
+    #[test]
+    fn repeat_to_nfa_design() {
+        let pattern = Pattern::Repeat(Box::new(Pattern::Literal('a')));
+
+        assert!(pattern.is_match(""));
+        assert!(pattern.is_match("a"));
+        assert!(pattern.is_match("aaaa"));
+        assert!(!pattern.is_match("ab"));
+    }
+}
