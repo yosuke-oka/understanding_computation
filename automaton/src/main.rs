@@ -1,5 +1,5 @@
 use automaton::pattern::Pattern;
-use automaton::pattern_parser::choose_parser;
+use automaton::pattern_parser::parse;
 
 fn main() {
     let pattern = Pattern::Repeat(Box::new(Pattern::Literal('a')));
@@ -10,9 +10,10 @@ fn main() {
     println!("{}", pattern.is_match("ab"));
 
     println!("--------");
-    println!("{:?}", choose_parser("abbb"));
-    let parsed = choose_parser("(a(|b))*");
+    println!("{:?}", parse("abbb"));
+    let parsed = parse("(a(|b))*");
 
     println!("{:?}", parsed);
-    println!("{:?}", parsed.unwrap().1.to_string());
+    println!("{}", parsed.is_match("abaab"));
+    println!("{}", parsed.is_match("abba"));
 }

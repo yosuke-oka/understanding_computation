@@ -1,11 +1,15 @@
 use crate::pattern::Pattern;
 use nom::branch::alt;
-use nom::character::complete::{anychar, char};
-use nom::combinator::{eof, map};
+use nom::character::complete::{char, satisfy};
+use nom::combinator::map;
 use nom::sequence::tuple;
 use nom::IResult;
 
-pub fn choose_parser(s: &str) -> IResult<&str, Pattern> {
+pub fn parse(s: &str) -> Pattern {
+    choose_parser(s).unwrap().1
+}
+
+fn choose_parser(s: &str) -> IResult<&str, Pattern> {
     alt((
         map(
             tuple((concatnate_or_empty_parser, char('|'), choose_parser)),
@@ -36,8 +40,7 @@ fn concatnate_parser(s: &str) -> IResult<&str, Pattern> {
 }
 
 fn empty_parser(s: &str) -> IResult<&str, Pattern> {
-    let (unused, _) = eof(s)?;
-    Ok((unused, Pattern::Empty))
+    Ok((s, Pattern::Empty))
 }
 
 fn repeat_parser(s: &str) -> IResult<&str, Pattern> {
@@ -60,7 +63,7 @@ fn brackets_parser(s: &str) -> IResult<&str, Pattern> {
 }
 
 fn literal_parser(s: &str) -> IResult<&str, Pattern> {
-    let (no_used, c) = anychar(s)?;
+    let (no_used, c) = satisfy(|c| c.is_ascii_alphabetic())(s)?;
     Ok((no_used, Pattern::Literal(c)))
 }
 
@@ -72,6 +75,9 @@ mod tests {
     fn literal_parser_test() {
         let (_, ast) = literal_parser("a").unwrap();
         assert_eq!(ast, Pattern::Literal('a'));
+
+        let parsed = literal_parser("|");
+        assert_eq!(parsed.ok(), None);
     }
 
     #[test]
