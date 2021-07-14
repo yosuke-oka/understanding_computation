@@ -85,4 +85,36 @@ mod tests {
         let (_, ast) = empty_parser("").unwrap();
         assert_eq!(ast, Pattern::Empty);
     }
+
+    #[test]
+    fn brackets_parser_test() {
+        let (_, ast) = brackets_parser("(a)").unwrap();
+        assert_eq!(ast, Pattern::Literal('a'));
+    }
+
+    #[test]
+    fn repeat_parser_test() {
+        let (_, ast) = repeat_parser("a*").unwrap();
+        assert_eq!(ast, Pattern::Repeat(Box::new(Pattern::Literal('a'))));
+    }
+
+    #[test]
+    fn concatnate_parser_test() {
+        let (_, ast) = concatnate_parser("a*b").unwrap();
+        let expect = Pattern::Concatnate {
+            first: Box::new(Pattern::Repeat(Box::new(Pattern::Literal('a')))),
+            second: Box::new(Pattern::Literal('b')),
+        };
+        assert_eq!(ast, expect);
+    }
+
+    #[test]
+    fn choose_parser_test() {
+        let (_, ast) = choose_parser("(a|)").unwrap();
+        let expect = Pattern::Choose {
+            first: Box::new(Pattern::Literal('a')),
+            second: Box::new(Pattern::Empty),
+        };
+        assert_eq!(ast, expect);
+    }
 }
