@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct DFARulebook {
-    pub rules: Vec<FARule>,
+    pub rules: Vec<FARule<State>>,
 }
 
 impl DFARulebook {
@@ -14,9 +14,9 @@ impl DFARulebook {
         }
     }
     fn next_state(&self, state: State, character: char) -> State {
-        self.rule_for(state, character).follow()
+        *self.rule_for(state, character).follow()
     }
-    fn rule_for(&self, state: State, character: char) -> &FARule {
+    fn rule_for(&self, state: State, character: char) -> &FARule<State> {
         self.rules
             .iter()
             .find(|r| r.is_applied_to(state, character))

@@ -7,7 +7,7 @@ pub const FREE_MOVE: char = '\x00';
 
 #[derive(Clone)]
 pub struct NFARulebook {
-    pub rules: Vec<FARule>,
+    pub rules: Vec<FARule<State>>,
 }
 
 impl NFARulebook {
@@ -16,7 +16,7 @@ impl NFARulebook {
             rules: args.iter().map(|&t| FARule::new(t)).collect(),
         }
     }
-    pub fn rules(&self) -> &Vec<FARule> {
+    pub fn rules(&self) -> &Vec<FARule<State>> {
         &self.rules
     }
     fn next_states(&self, states: &HashSet<State>, character: char) -> HashSet<State> {
@@ -30,9 +30,10 @@ impl NFARulebook {
         self.rules_for(state, character)
             .iter()
             .map(|r| r.follow())
+            .cloned()
             .collect()
     }
-    fn rules_for(&self, state: &State, character: char) -> Vec<FARule> {
+    fn rules_for(&self, state: &State, character: char) -> Vec<FARule<State>> {
         self.rules
             .iter()
             .filter(|r| r.is_applied_to(*state, character))
@@ -46,6 +47,9 @@ impl NFARulebook {
         } else {
             self.follow_free_moves(&states.union(&more_states).cloned().collect())
         }
+    }
+    fn alphabet(&self) -> HashSet<char> {
+        self.rules.iter().map(|r| r.character()).collect()
     }
 }
 
@@ -132,10 +136,24 @@ impl NFASimulation {
             nfa_design: nfa_design,
         }
     }
-    fn next_state(&self, state: Vec<State>, character: char) -> HashSet<State> {
-        let mut nfa = self.nfa_design.to_nfa_simulation(state);
+    fn next_state(&self, states: Vec<State>, character: char) -> HashSet<State> {
+        let mut nfa = self.nfa_design.to_nfa_simulation(states);
         nfa.read_character(character);
         nfa.get_current_states()
+    }
+    fn rules_for(&self, states: Vec<State>) -> Vec<FARule<Vec<State>>> {
+        self.nfa_design
+            .rulebook()
+            .alphabet()
+            .iter()
+            .map(|&c| {
+                FARule::new((
+                    states.clone(),
+                    c,
+                    self.next_state(states.clone(), c).iter().cloned().collect(),
+                ))
+            })
+            .collect()
     }
 }
 
