@@ -49,7 +49,11 @@ impl NFARulebook {
         }
     }
     fn alphabet(&self) -> HashSet<char> {
-        self.rules.iter().map(|r| r.character()).collect()
+        self.rules
+            .iter()
+            .map(|r| r.character())
+            .filter(|&c| c != FREE_MOVE)
+            .collect()
     }
 }
 
@@ -126,12 +130,12 @@ impl NFADesign {
     }
 }
 
-struct NFASimulation {
+pub struct NFASimulation {
     nfa_design: NFADesign,
 }
 
 impl NFASimulation {
-    fn new(nfa_design: NFADesign) -> Self {
+    pub fn new(nfa_design: NFADesign) -> Self {
         NFASimulation {
             nfa_design: nfa_design,
         }
@@ -141,7 +145,7 @@ impl NFASimulation {
         nfa.read_character(character);
         nfa.get_current_states()
     }
-    fn rules_for(&self, states: Vec<State>) -> Vec<FARule<Vec<State>>> {
+    pub fn rules_for(&self, states: Vec<State>) -> Vec<FARule<Vec<State>>> {
         self.nfa_design
             .rulebook()
             .alphabet()

@@ -1,19 +1,16 @@
-use automaton::pattern::Pattern;
-use automaton::pattern_parser::parse;
+use automaton::nfa::*;
 
 fn main() {
-    let pattern = Pattern::Repeat(Box::new(Pattern::Literal('a')));
-    println!("/{}/", pattern);
-    println!("{}", pattern.is_match(""));
-    println!("{}", pattern.is_match("a"));
-    println!("{}", pattern.is_match("aaa"));
-    println!("{}", pattern.is_match("ab"));
-
-    println!("--------");
-    println!("{:?}", parse("abbb"));
-    let parsed = parse("(a(|b))*");
-
-    println!("{:?}", parsed);
-    println!("{}", parsed.is_match("abaab"));
-    println!("{}", parsed.is_match("abba"));
+    let rulebook = NFARulebook::build(vec![
+        (1, 'a', 1),
+        (1, 'a', 2),
+        (1, FREE_MOVE, 2),
+        (2, 'b', 3),
+        (3, 'b', 1),
+        (3, FREE_MOVE, 2),
+    ]);
+    let nfa_design = NFADesign::new((1, vec![3].iter().cloned().collect(), rulebook));
+    let sim = NFASimulation::new(nfa_design);
+    println!("{:?}", sim.rules_for(vec![1, 2]));
+    println!("{:?}", sim.rules_for(vec![3, 2]));
 }

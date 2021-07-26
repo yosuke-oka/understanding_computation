@@ -1,7 +1,7 @@
 use std::fmt;
 use std::fmt::Debug;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FARule<T> {
     state: T,
     character: char,
