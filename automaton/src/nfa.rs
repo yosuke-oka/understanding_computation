@@ -122,6 +122,23 @@ impl NFADesign {
     }
 }
 
+struct NFASimulation {
+    nfa_design: NFADesign,
+}
+
+impl NFASimulation {
+    fn new(nfa_design: NFADesign) -> Self {
+        NFASimulation {
+            nfa_design: nfa_design,
+        }
+    }
+    fn next_state(&self, state: Vec<State>, character: char) -> HashSet<State> {
+        let mut nfa = self.nfa_design.to_nfa_simulation(state);
+        nfa.read_character(character);
+        nfa.get_current_states()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -189,6 +206,24 @@ mod tests {
         assert_eq!(
             nfa.get_current_states(),
             vec![1, 2, 3].iter().cloned().collect()
+        );
+    }
+
+    #[test]
+    fn nfa_simulation_next_state_test() {
+        let rulebook = NFARulebook::build(vec![
+            (1, 'a', 1),
+            (1, 'a', 2),
+            (1, FREE_MOVE, 2),
+            (2, 'b', 3),
+            (3, 'b', 1),
+            (3, FREE_MOVE, 2),
+        ]);
+        let nfa_design = NFADesign::new((1, vec![3].iter().cloned().collect(), rulebook));
+        let sim = NFASimulation::new(nfa_design);
+        assert_eq!(
+            sim.next_state(vec![1, 2], 'a'),
+            vec![1, 2].iter().cloned().collect()
         );
     }
 }
