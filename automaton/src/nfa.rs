@@ -108,6 +108,13 @@ impl NFADesign {
             rulebook: self.rulebook.clone(),
         }
     }
+    fn to_nfa_simulation(&self, current_states: Vec<State>) -> NFA {
+        NFA {
+            current_states: current_states.iter().cloned().collect(),
+            accept_states: self.accept_states.clone(),
+            rulebook: self.rulebook.clone(),
+        }
+    }
     pub fn is_accept(&self, string: &str) -> bool {
         let mut nfa = self.to_nfa();
         nfa.read_string(string);
@@ -152,5 +159,36 @@ mod tests {
         assert!(nfa_design.is_accept("aaa"));
         assert!(!nfa_design.is_accept("aaaaa"));
         assert!(nfa_design.is_accept("aaaaaa"));
+    }
+
+    #[test]
+    fn to_nfa_simulation_test() {
+        let rulebook = NFARulebook::build(vec![
+            (1, 'a', 1),
+            (1, 'a', 2),
+            (1, FREE_MOVE, 2),
+            (2, 'b', 3),
+            (3, 'b', 1),
+            (3, FREE_MOVE, 2),
+        ]);
+        let nfa_design = NFADesign::new((1, vec![3].iter().cloned().collect(), rulebook));
+        assert_eq!(
+            nfa_design.to_nfa().get_current_states(),
+            vec![1, 2].iter().cloned().collect()
+        );
+        assert_eq!(
+            nfa_design.to_nfa_simulation(vec![2]).get_current_states(),
+            vec![2].iter().cloned().collect()
+        );
+        assert_eq!(
+            nfa_design.to_nfa_simulation(vec![3]).get_current_states(),
+            vec![2, 3].iter().cloned().collect()
+        );
+        let mut nfa = nfa_design.to_nfa_simulation(vec![2, 3]);
+        nfa.read_character('b');
+        assert_eq!(
+            nfa.get_current_states(),
+            vec![1, 2, 3].iter().cloned().collect()
+        );
     }
 }
