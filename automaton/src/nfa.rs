@@ -57,7 +57,7 @@ impl NFARulebook {
     }
 }
 
-struct NFA {
+pub struct NFA {
     current_states: HashSet<State>,
     accept_states: HashSet<State>,
     rulebook: NFARulebook,
@@ -81,7 +81,7 @@ impl NFA {
             self.read_character(c);
         }
     }
-    fn get_current_states(&self) -> HashSet<State> {
+    pub fn get_current_states(&self) -> HashSet<State> {
         self.rulebook.follow_free_moves(&self.current_states)
     }
 }
@@ -109,7 +109,7 @@ impl NFADesign {
     pub fn rulebook(&self) -> &NFARulebook {
         &self.rulebook
     }
-    fn to_nfa(&self) -> NFA {
+    pub fn to_nfa(&self) -> NFA {
         NFA {
             current_states: vec![self.start_state].into_iter().collect(),
             accept_states: self.accept_states.clone(),
@@ -145,7 +145,7 @@ impl NFASimulation {
         nfa.read_character(character);
         nfa.get_current_states()
     }
-    pub fn rules_for(&self, states: Vec<State>) -> Vec<FARule<Vec<State>>> {
+    fn rules_for(&self, states: Vec<State>) -> Vec<FARule<Vec<State>>> {
         self.nfa_design
             .rulebook()
             .alphabet()
@@ -158,6 +158,24 @@ impl NFASimulation {
                 ))
             })
             .collect()
+    }
+    pub fn discover_states_and_rules(
+        &self,
+        states: HashSet<Vec<State>>,
+    ) -> (HashSet<Vec<State>>, Vec<FARule<Vec<State>>>) {
+        let rules = states
+            .iter()
+            .flat_map(|s| self.rules_for(s.iter().cloned().collect()))
+            .collect::<Vec<_>>();
+        let more_states = rules
+            .iter()
+            .map(|r| r.follow().clone())
+            .collect::<HashSet<_>>();
+        if more_states.is_subset(&states) {
+            (states, rules)
+        } else {
+            self.discover_states_and_rules(states.union(&more_states).cloned().collect())
+        }
     }
 }
 
