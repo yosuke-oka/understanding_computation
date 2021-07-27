@@ -163,12 +163,12 @@ impl NFASimulation {
         &self,
         states: HashSet<Vec<State>>,
     ) -> (HashSet<Vec<State>>, Vec<FARule<Vec<State>>>) {
-        let mut ss = HashSet::new();
+        let mut sorted_states = HashSet::new();
         for mut s in states {
             s.sort();
-            ss.insert(s);
+            sorted_states.insert(s);
         }
-        let states = ss;
+        let states = sorted_states;
         let rules = states
             .iter()
             .flat_map(|s| self.rules_for(s.iter().cloned().collect()))
@@ -181,7 +181,6 @@ impl NFASimulation {
                 s
             })
             .collect::<HashSet<_>>();
-        println!("{:?}, {:?}", &more_states, &states);
         if more_states.is_subset(&states) {
             (states, rules)
         } else {
