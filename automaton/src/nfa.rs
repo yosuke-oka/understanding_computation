@@ -160,7 +160,7 @@ impl NFASimulation {
             })
             .collect()
     }
-    pub fn discover_states_and_rules(
+    fn discover_states_and_rules(
         &self,
         states: BTreeSet<BTreeSet<State>>,
     ) -> (BTreeSet<BTreeSet<State>>, Vec<FARule<BTreeSet<State>>>) {
@@ -320,8 +320,5 @@ mod tests {
         assert!(!dfa_design.is_accept("aaa"));
         assert!(dfa_design.is_accept("aab"));
         assert!(dfa_design.is_accept("bbbabb"));
-        println!("{}", dfa_design.is_accept("aaa"));
-        println!("{}", dfa_design.is_accept("aab"));
-        println!("{}", dfa_design.is_accept("bbbabb"));
     }
 }
