@@ -252,15 +252,22 @@ mod tests {
             nfa_design.to_nfa().get_current_states(),
             vec![1, 2].iter().cloned().collect()
         );
+        let mut state = BTreeSet::new();
+        state.insert(2);
         assert_eq!(
-            nfa_design.to_nfa_simulation(vec![2]).get_current_states(),
+            nfa_design.to_nfa_simulation(state).get_current_states(),
             vec![2].iter().cloned().collect()
         );
+        let mut state = BTreeSet::new();
+        state.insert(3);
         assert_eq!(
-            nfa_design.to_nfa_simulation(vec![3]).get_current_states(),
+            nfa_design.to_nfa_simulation(state).get_current_states(),
             vec![2, 3].iter().cloned().collect()
         );
-        let mut nfa = nfa_design.to_nfa_simulation(vec![2, 3]);
+        let mut state = BTreeSet::new();
+        state.insert(2);
+        state.insert(3);
+        let mut nfa = nfa_design.to_nfa_simulation(state);
         nfa.read_character('b');
         assert_eq!(
             nfa.get_current_states(),
@@ -280,8 +287,11 @@ mod tests {
         ]);
         let nfa_design = NFADesign::new((1, vec![3].iter().cloned().collect(), rulebook));
         let sim = NFASimulation::new(nfa_design);
+        let mut state = BTreeSet::new();
+        state.insert(1);
+        state.insert(2);
         assert_eq!(
-            sim.next_state(vec![1, 2], 'a'),
+            sim.next_state(state, 'a'),
             vec![1, 2].iter().cloned().collect()
         );
     }
