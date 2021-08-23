@@ -21,4 +21,8 @@ fn main() {
     let mut state = BTreeSet::new();
     state.insert(start_state);
     println!("{:?}", sim.discover_states_and_rules(state));
+    let dfa_design = sim.to_dfa_design();
+    println!("{}", dfa_design.is_accept("aaa"));
+    println!("{}", dfa_design.is_accept("aab"));
+    println!("{}", dfa_design.is_accept("bbbabb"));
 }

@@ -1,4 +1,4 @@
-use crate::dfa::{DFADesign, DFARulebook};
+use crate::dfa_from_nfa::{DFADesign, DFARulebook};
 use crate::fa_rule::FARule;
 use crate::state::State;
 use std::collections::BTreeSet;
@@ -178,7 +178,7 @@ impl NFASimulation {
             self.discover_states_and_rules(states.union(&more_states).cloned().collect())
         }
     }
-    fn to_dfa_design(&self) -> DFADesign {
+    pub fn to_dfa_design(&self) -> DFADesign {
         let start_state = self
             .nfa_design
             .to_nfa()
@@ -187,11 +187,11 @@ impl NFASimulation {
             .cloned()
             .collect::<BTreeSet<_>>();
         let mut state = BTreeSet::new();
-        state.insert(start_state);
+        state.insert(start_state.clone());
         let (states, rules) = self.discover_states_and_rules(state);
         let accept_states = states
             .iter()
-            .filter(|s| self.nfa_design.to_nfa_simulation(**s).is_accept())
+            .filter(|&s| self.nfa_design.to_nfa_simulation(s.clone()).is_accept())
             .cloned()
             .collect::<BTreeSet<_>>();
         DFADesign::new((start_state, accept_states, DFARulebook::new(rules)))
