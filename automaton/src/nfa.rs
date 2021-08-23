@@ -1,3 +1,4 @@
+use crate::dfa::{DFADesign, DFARulebook};
 use crate::fa_rule::FARule;
 use crate::state::State;
 use std::collections::HashSet;
@@ -187,6 +188,24 @@ impl NFASimulation {
             self.discover_states_and_rules(states.union(&more_states).cloned().collect())
         }
     }
+    //fn to_dfa_design(&self) -> DFADesign {
+    //    let start_state = self
+    //        .nfa_design
+    //        .to_nfa()
+    //        .get_current_states()
+    //        .iter()
+    //        .cloned()
+    //        .collect::<Vec<_>>();
+    //    let mut state = HashSet::new();
+    //    state.insert(start_state);
+    //    let (states, rules) = self.discover_states_and_rules(state);
+    //    let accept_states = states
+    //        .iter()
+    //        .filter(|s| self.nfa_design.to_nfa_simulation(s.to_vec()).is_accept())
+    //        .cloned()
+    //        .collect();
+    //    DFADesign::new((start_state, accept_states, DFARulebook::new(rules)))
+    //}
 }
 
 #[cfg(test)]
