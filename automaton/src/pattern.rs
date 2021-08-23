@@ -3,7 +3,7 @@ use crate::nfa::NFADesign;
 use crate::nfa::NFARulebook;
 use crate::nfa::FREE_MOVE;
 use crate::state::new_state;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::fmt;
 
 #[derive(Debug, PartialEq)]
@@ -118,7 +118,7 @@ impl Pattern {
                     .accept_states()
                     .union(second_nfa_design.accept_states())
                     .cloned()
-                    .collect::<HashSet<_>>();
+                    .collect::<BTreeSet<_>>();
                 let mut rules = Vec::new();
                 // concat first + second rules
                 rules.append(&mut first_nfa_design.rulebook().rules().clone());

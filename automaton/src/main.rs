@@ -1,5 +1,5 @@
 use automaton::nfa::*;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 fn main() {
     let rulebook = NFARulebook::build(vec![
@@ -16,9 +16,9 @@ fn main() {
         .get_current_states()
         .iter()
         .cloned()
-        .collect::<Vec<_>>();
+        .collect::<BTreeSet<_>>();
     let sim = NFASimulation::new(nfa_design);
-    let mut state = HashSet::new();
+    let mut state = BTreeSet::new();
     state.insert(start_state);
     println!("{:?}", sim.discover_states_and_rules(state));
 }

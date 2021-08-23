@@ -1,6 +1,6 @@
 use crate::fa_rule::FARule;
 use crate::state::State;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 #[derive(Clone)]
 pub struct DFARulebook {
@@ -29,7 +29,7 @@ impl DFARulebook {
 
 struct DFA {
     current_state: State,
-    accept_states: HashSet<State>,
+    accept_states: BTreeSet<State>,
     rulebook: DFARulebook,
 }
 
@@ -49,12 +49,12 @@ impl DFA {
 
 pub struct DFADesign {
     current_state: State,
-    accept_states: HashSet<State>,
+    accept_states: BTreeSet<State>,
     rulebook: DFARulebook,
 }
 
 impl DFADesign {
-    pub fn new(arg: (State, HashSet<State>, DFARulebook)) -> DFADesign {
+    pub fn new(arg: (State, BTreeSet<State>, DFARulebook)) -> DFADesign {
         DFADesign {
             current_state: arg.0,
             accept_states: arg.1,
