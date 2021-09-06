@@ -36,6 +36,19 @@ impl fmt::Display for Stack {
         }
     }
 }
+impl fmt::Debug for Stack {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.top() {
+            None => write!(f, "<Stack ()>"),
+            Some(&c) => write!(
+                f,
+                "<Stack ({}){}>",
+                c,
+                self.contents[1..].iter().collect::<String>()
+            ),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

@@ -1,9 +1,10 @@
+use automaton::pda_configuration::*;
 use automaton::stack::Stack;
 fn main() {
-    let stack = Stack::new(vec!['a', 'b', 'c', 'd', 'e']);
-    println!("{}", stack);
-    println!("{:?}", stack.top());
-    println!("{:?}", stack.pop().pop().top());
-    println!("{:?}", stack.push('x').push('y').top());
-    println!("{:?}", stack.push('x').push('y').pop().top());
+    let rule = PDARule::new(1, '(', 2, '$', vec!['b', '$']);
+    println!("{:?}", rule);
+    let configuration = PDAConfiguration::new(1, Stack::new(vec!['$']));
+    println!("{:?}", configuration);
+    //println!("{}", rule.is_applied_to(configuration, '('));
+    println!("{:?}", rule.follow(configuration));
 }
