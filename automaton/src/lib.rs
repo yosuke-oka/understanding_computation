@@ -1,5 +1,6 @@
 pub mod dfa;
 pub mod dfa_from_nfa;
+pub mod dpda;
 pub mod fa_rule;
 pub mod nfa;
 pub mod pattern;
