@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Clone, PartialEq)]
 pub struct Stack {
     contents: Vec<char>,
 }

@@ -1,7 +1,7 @@
 use crate::stack::Stack;
 use crate::state::State;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct PDAConfiguration {
     state: State,
     stack: Stack,
@@ -55,5 +55,18 @@ impl PDARule {
             .iter()
             .rev()
             .fold(poped_stack, |stack, &character| stack.push(character))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pda_configuration_test() {
+        let rule = PDARule::new(1, '(', 2, '$', vec!['b', '$']);
+        let configuration = PDAConfiguration::new(1, Stack::new(vec!['$']));
+        let expected = PDAConfiguration::new(2, Stack::new(vec!['b', '$']));
+        assert_eq!(rule.follow(configuration), expected);
     }
 }
